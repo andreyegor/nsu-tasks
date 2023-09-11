@@ -8,7 +8,7 @@ int main() {
         return 0;
     }
     n++;
-    unsigned long long m[n];
+    char m[n];
     for (unsigned long long i = 0; i < n; i++) m[i] = 1;
     m[0] = 0;
     m[1] = 0;
