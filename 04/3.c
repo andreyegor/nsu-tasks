@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <stdio.h>
 
-// проверить реализацию
+
 int gcd(int a, int b) {
     assert((a > 0) && (b > 0));
 
