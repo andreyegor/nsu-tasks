@@ -7,7 +7,7 @@ void foo(ptrdiff_t t){
 }
 
 int main(){
-    for (ptrdiff_t t = 1024;1;t+=1024){
+    for (ptrdiff_t t = 4096;1;t+=4096){
         foo(t);
         if (t%1024==0){
             printf("%lld\n", t);
