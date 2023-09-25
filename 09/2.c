@@ -1,4 +1,13 @@
 #include <stdio.h>
+#include <malloc.h>
+#include <stdlib.h>
+
+int of_check(void* ptr){
+    if (ptr==NULL){
+        printf("out of memory");
+        exit(0);
+    }
+}
 
 int* findSubArr(int* arr1, size_t len1, int* arr2, size_t len2) {
     for (int i = 0; i < len1; i++) {
@@ -13,11 +22,13 @@ int* findSubArr(int* arr1, size_t len1, int* arr2, size_t len2) {
 int main() {
     size_t len1, len2;
     scanf("%lld", &len1);
-    int arr1[len1];
+    int *arr1 = (int*) malloc(len1*sizeof(int));
+    of_check(arr1);
     for (size_t i = 0; i < len1; i++) scanf("%d", &arr1[i]);
 
     scanf("%lld", &len2);
-    int arr2[len2];
+    int *arr2 = (int*) malloc(len2*sizeof(int));
+    of_check(arr2);
     for (size_t i = 0; i < len2; i++) scanf("%d", &arr2[i]);
 
     int* out = findSubArr(arr1, len1, arr2, len2);

@@ -1,13 +1,21 @@
 #include <stdio.h> 
 #include <malloc.h>
-int create_triangle(size_t len, int** out_arr){
-    for (size_t i=0;i<len;i++){
-        out_arr[i] = (int*) malloc(i*sizeof(int));
-        if (out_arr[i] ==NULL){
-            printf("out of memory");
-            exit(0);
-        }
+#include <stdlib.h>
+
+int of_check(void* ptr){
+    if (ptr==NULL){
+        printf("out of memory");
+        exit(0);
     }
+}
+int create_triangle(size_t len, int*** out_arr){
+    int** arr = (int**) malloc(len*sizeof(int*));
+    of_check(arr);
+    for (size_t i=0;i<len;i++){
+        arr[i] = (int*) malloc(i*sizeof(int));
+        of_check(arr);
+    }
+    *out_arr = arr;
     return len;
 }
 
@@ -34,12 +42,8 @@ void print_triangle(size_t len, int** arr){
 int main(){
     size_t len;
     scanf("%lld", &len);
-    int** arr = (int**) malloc(len*sizeof(int*));
-    if (out_arr[i] ==NULL){
-        printf("out of memory");
-        exit(0);
-    }
-    create_triangle(len, arr);
+    int** arr;
+    create_triangle(len, &arr);
     fill_triangle(len, arr);
     print_triangle(len, arr);
 
