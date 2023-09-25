@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <malloc.h>
-#include <math.h>
 
 void scanArr(int* arr, size_t len) {
     for (size_t i = 0; i < len; i++) {
@@ -62,19 +61,36 @@ int compareArrays(int* arr1, size_t len1, int* arr2, size_t len2) {
     return (len1 > len2) ? 1 : -1;
 }
 
-int main() {
+// нельзя использовать realloc
+int main(){
     char del40[] = "--------------------------------------\n";
+    printf("enter your array: ");
 
-    // scanArr
-    printf("%s>scanArr\n", del40);
-
-    size_t len;
-    printf("enter your array length: ");
-    scanf("%lld", &len);
+    size_t len = 2;
     int* arr = (int*) malloc(len*sizeof(int));
     if (arr==NULL){printf("out of memory"); exit(0);}
-    printf("enter your array: ");
-    scanArr(arr, len);
+    for(size_t i=0;;i++){
+        int inp;
+        scanf("%d", &inp);
+        if (inp == 0) {
+            len = i;
+            break;
+        }
+        if (i+1<len){
+            arr[i] = inp;
+            continue;
+        }
+        arr[i] = inp;
+        int* new_arr = (int*) malloc(2*len*sizeof(int));
+        if (new_arr==NULL){printf("out of memory"); exit(0);}
+        for (int j=0; j<len;j++){
+            new_arr[j] = arr[j];
+        }
+        len*=2;
+        free(arr);
+        arr = new_arr;
+    }
+
     printf("your array: ");
     printArr(arr, len);
 
