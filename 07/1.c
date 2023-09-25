@@ -5,7 +5,6 @@ int main(){
     for (size_t i=0; i<4; i++){
         for (size_t j=0; j<4; j++){
             scanf("%d", &m[i][j]);
-
         }
     }
 
@@ -14,7 +13,6 @@ int main(){
             int tmp = m[j][i];
             m[j][i] = m[i][j];
             m[i][j] = tmp;
-
         }
     }
 
@@ -24,4 +22,6 @@ int main(){
         }
         printf("\n");
     }
+
+    return 0;
 }
