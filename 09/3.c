@@ -27,6 +27,8 @@ int removeSubArr(int* arr1, size_t len1, int* arr2, size_t len2){
             subarr[i] = subarr[i+len2];
         }
     }
+    arr1 = (int*) realloc(arr1, len1*sizeof(int));
+    of_check(arr1);
     return len1;
 }
 
