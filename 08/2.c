@@ -61,7 +61,6 @@ int compareArrays(int* arr1, size_t len1, int* arr2, size_t len2) {
     return (len1 > len2) ? 1 : -1;
 }
 
-// нельзя использовать realloc
 int main(){
     char del40[] = "--------------------------------------\n";
     printf("enter your array: ");
