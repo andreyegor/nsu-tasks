@@ -37,5 +37,7 @@ int main(){
     size_t len = scanArr(&arr, &capacity);
     printf("%d %d\n", len, capacity);
     for (size_t i = 0; i < len; i++) printf("%d ", arr[i]);
+    free(arr);
+    
     return 0;
 }

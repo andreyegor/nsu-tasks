@@ -34,5 +34,7 @@ int main() {
     int* out = findSubArr(arr1, len1, arr2, len2);
     if (out!=NULL) for (size_t i = 0; i <len2; i++) printf("%d ", out[i]);
     else printf("not found");
+    free(arr1);
+    free(arr2);
     return 0;
 }

@@ -46,5 +46,8 @@ int main() {
 
     len1 = removeSubArr(arr1, len1, arr2, len2);
     for (size_t i = 0; i <len1; i++) printf("%d ", arr1[i]);
+    free(arr1);
+    free(arr2);
+    
     return 0;
 }

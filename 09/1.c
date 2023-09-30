@@ -36,5 +36,10 @@ int main() {
     size_t out_len = concat(arr1, len1, arr2, len2, &out_arr);
     printf("%d\n", out_len);
     for (size_t i = 0; i < out_len; i++) printf("%d ", out_arr[i]);
+
+    free(arr1);
+    free(arr2);
+    free(out_arr);
+    
     return 0;
 }

@@ -46,6 +46,7 @@ int main(){
     create_triangle(len, &arr);
     fill_triangle(len, arr);
     print_triangle(len, arr);
-
+    free(arr);
+    
     return 0;
 }
