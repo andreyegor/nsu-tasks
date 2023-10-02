@@ -7,4 +7,4 @@ def matrix(data):
     return out
 
 
-print(matrix("1 2| 3 4"))
+print(matrix("1 2 | 3 4"))
