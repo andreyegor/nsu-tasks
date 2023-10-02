@@ -6,4 +6,5 @@ def matrix(data):
             out[-1].append(float(e))
     return out
 
+
 print(matrix("1 2| 3 4"))
