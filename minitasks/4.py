@@ -11,4 +11,4 @@ def reversed_dict(d):
     return out
 
 
-print(reversed_dict({"Ivanov": [97832], "Petrov": 55521, "Sidorov": 97832}))
+print(reversed_dict({"Ivanov": 97832, "Petrov": 55521, "Kuznecov": 97832}))
