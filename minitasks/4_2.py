@@ -10,10 +10,14 @@ def reversed_dict(d):
             out[val] = (out[val], key)
             is_tupple.add(val)
         else:
-            out[val] = out[val] + (key,)
+            out[val] += (key,)
     return out
 
 
 print(reversed_dict({"Ivanov": 97832, "Petrov": 55521, "Kuznecov": 97832}))
 print(reversed_dict({"Ivanov": (97832, 2), "Petrov": 55521, "Kuznecov": (97832, 2)}))
-print(reversed_dict({("Ivanov", 1): (97832, 2), "Petrov": 55521, ("Kuznecov", 1): (97832, 2)}))
+print(
+    reversed_dict(
+        {("Ivanov", 1): (97832, 2), "Petrov": 55521, ("Kuznecov", 1): (97832, 2)}
+    )
+)
