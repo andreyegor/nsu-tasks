@@ -5,12 +5,12 @@ def reversed_dict(d):
     for key, val in d.items():
         if val not in keys:
             out[val] = key
-            keys.add(key)
+            keys.add(val)
         elif val not in is_tupple:
             out[val] = (out[val], key)
             is_tupple.add(val)
         else:
-            out[val] += key
+            out[val] = out[val]+(key,)
     return out
 
 
