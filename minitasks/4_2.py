@@ -10,7 +10,7 @@ def reversed_dict(d):
             out[val] = (out[val], key)
             is_tupple.add(val)
         else:
-            out[val] = out[val]+(key,)
+            out[val] = out[val] + (key,)
     return out
 
 
