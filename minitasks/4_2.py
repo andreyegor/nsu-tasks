@@ -1,11 +1,9 @@
 def reversed_dict(d):
-    keys = set()
     is_tupple = set()
     out = dict()
     for key, val in d.items():
-        if val not in keys:
+        if val not in out:
             out[val] = key
-            keys.add(val)
         elif val not in is_tupple:
             out[val] = (out[val], key)
             is_tupple.add(val)
