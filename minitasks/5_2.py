@@ -1,10 +1,6 @@
 def sum(a, b):
     return a + b
 
-
-print(sum.__code__.co_varnames)
-
-
 def specialize(f, *spec_args, **spec_kwargs):
     """В этой реализации можно переопределять аргументы как угодно, а ещё менять переопределённые значения итоговой функции"""
 
