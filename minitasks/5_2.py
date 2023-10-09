@@ -18,7 +18,7 @@ def specialize(f, *spec_args, **spec_kwargs):
 
     return spec_f
 
-
+# в первой реализации нельзя сделать во так
 plus_one = specialize(sum, 1, a=1)
 print(plus_one(10))
 
