@@ -12,10 +12,14 @@ def specialize(f, *spec_args, **spec_kwargs):
     # filter(lambda x: x not in spec_kwargs,f.__code__.co_varnames), spec_args)))
 
     def spec_f(*args, **kwargs):
-        spec_kwargs.update(kwargs)
-        spec_kwargs.update(**dict(zip(
-        filter(lambda x: x not in spec_kwargs,f.__code__.co_varnames), args)))
-        return f(**spec_kwargs)
+        default_kwargs = spec_kwargs.copy()
+        default_kwargs.update(kwargs)
+        if len(args)+len(default_kwargs) != len(f.__code__.co_varnames):
+            raise TypeError(f"Количество запрошенных и полученных аргументов не совпадает")
+        
+        default_kwargs.update(**dict(zip(
+        filter(lambda x: x not in default_kwargs,f.__code__.co_varnames), args)))
+        return f(**default_kwargs)
 
     return spec_f
 
