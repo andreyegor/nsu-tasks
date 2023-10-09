@@ -21,6 +21,8 @@ def specialize(f, *spec_args, **spec_kwargs):
 # в первой реализации нельзя сделать во так
 plus_one = specialize(sum, 1, a=1)
 print(plus_one(10))
+# и вот так
+print(plus_one(10, a=5))
 
 just_two = specialize(sum, 1, 1)
 print(just_two())
