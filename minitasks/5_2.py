@@ -14,7 +14,7 @@ def specialize(f, *spec_args, **spec_kwargs):
     def spec_f(*args, **kwargs):
         default_kwargs = spec_kwargs.copy()
         default_kwargs.update(kwargs)
-        if len(args)+len(default_kwargs) != len(f.__code__.co_varnames):
+        if len(args) + len(default_kwargs) != len(f.__code__.co_varnames):
             raise TypeError(f"Количество запрошенных и полученных аргументов не совпадает")
         
         default_kwargs.update(**dict(zip(
