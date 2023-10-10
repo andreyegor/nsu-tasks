@@ -13,22 +13,22 @@ void of_check(void* ptr) {
     }
 }
 
-void exeption(jmp_buf buf, const char* message) {
+void exeption(jmp_buf buf, int err_code, const char* message) {
     if (buf != NULL) {
-        longjmp(buf, 1);
+        longjmp(buf, err_code);
     } else {
         printf("%s", message);
         exit(0);
     }
 }
 
-unsigned int my_pow(unsigned int a, unsigned int b,unsigned int limit, jmp_buf buf){
+unsigned int my_pow(unsigned int a, unsigned int b, unsigned int limit, jmp_buf buf) {
     unsigned int out = 1;
-    for(int i=0; i<b; i++){
-        if (out*a>limit){
-            exeption(buf, "overflow");
+    for (int i = 0; i < b; i++) {
+        if (out * a > limit) {
+            exeption(buf, 1, "overflow");
         }
-        out*=a;
+        out *= a;
     }
     return out;
 }
@@ -51,12 +51,12 @@ signed int s2i(const char* line, int base, jmp_buf buf) {
                 unsigned int k = my_pow(base, len - i - 1, limit, buf) * j;  // нужна своя реализация pow
                 n += k;
                 if (n > limit) {
-                    exeption(buf, "overflow");
+                    exeption(buf, 1, "overflow");
                 }
                 break;
             }
             if (j == base) {
-                exeption(buf, "wrong alphabet");
+                exeption(buf, 2, "wrong alphabet");
             }
         }
     }
@@ -69,6 +69,14 @@ int main() {
     int base;
     scanf("%s", line);
     scanf("%d", &base);
-    printf("%d", s2i(line, base, NULL));
+
+    jmp_buf buf;
+    int err_code = setjmp(buf);
+    if (err_code != 0) {
+        printf("%s", err_code == 1 ? "overflow!" : "wrong input!");
+        exit(0);
+    }
+    
+    printf("%d", s2i(line, base, buf));
     return 0;
 }
