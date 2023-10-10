@@ -4,7 +4,7 @@
 int palindrom(const char* line) {
     size_t right = strlen(line);
 
-    for (int left = 0; left <= right / 2; left++) {
+    for (size_t left = 0; left <= right / 2; left++) {
         right--;
         if (line[left] == ' ')
             right++;
