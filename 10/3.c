@@ -56,6 +56,8 @@ int main() {
     DynArr arr = trim(line);
     for (size_t i = 0; i < arr.len; i++) {
         printf("%s\n", arr.arr[i]);
+        free(arr.arr[i]);
     }
+    free(arr.arr);
     return 0;
 }
