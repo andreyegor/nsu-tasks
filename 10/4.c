@@ -48,7 +48,7 @@ signed int s2i(const char* line, int base, jmp_buf buf) {
     for (int i = sign > 0 ? 0 : 1; i < len; i++) {
         for (int j = 0; j <= base; j++) {
             if (line[i] == alphabet[j]) {
-                unsigned int k = my_pow(base, len - i - 1, limit, buf) * j;  // нужна своя реализация pow
+                unsigned int k = my_pow(base, len - i - 1, limit, buf) * j;
                 n += k;
                 if (n > limit) {
                     exeption(buf, 1, "overflow");
@@ -76,7 +76,7 @@ int main() {
         printf("%s", err_code == 1 ? "overflow!" : "wrong input!");
         exit(0);
     }
-    
+
     printf("%d", s2i(line, base, buf));
     return 0;
 }
