@@ -17,7 +17,7 @@ def solution(data: str) -> int:
         i,j = queue.popleft()
         if graph[0][i] > graph[0][j] + graph[j][i]:
             graph[0][i] = graph[0][j] + graph[j][i]
-            queue.extend((i,j) for j in range(1, q_nodes))
+            queue.extend((j,i) for j in range(1, q_nodes))
 
     return nodes[
         max(range(q_nodes), key=lambda x: nodes[x] if graph[0][x] <= power else -1)
