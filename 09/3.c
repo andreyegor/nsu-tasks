@@ -10,8 +10,8 @@ int of_check(void* ptr){
 }
 
 int* findSubArr(int* arr1, size_t len1, int* arr2, size_t len2) {
-    for (int i = 0; i < len1; i++) {
-        for (int j = 0; j < len2; j++){
+    for (size_t i = 0; i < len1-len2+1; i++) {
+        for (size_t j = 0; j < len2; j++){
             if (arr1[i+j] != arr2[j]) break;
             if (j==len2-1) return &arr1[i];
         }
