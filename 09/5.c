@@ -2,7 +2,7 @@
 #include <malloc.h>
 #include <stdlib.h>
 
-int of_check(void* ptr){
+void of_check(void* ptr){
     if (ptr==NULL){
         printf("out of memory");
         exit(0);
