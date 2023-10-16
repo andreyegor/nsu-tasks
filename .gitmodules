@@ -1,0 +1,6 @@
+[submodule "labs/task-zero-andreyegor"]
+	path = labs/task-zero-andreyegor
+	url = https://github.com/nsu-syspro/task-zero-andreyegor
+[submodule "labs/first-task-first-variant-andreyegor"]
+	path = labs/first-task-first-variant-andreyegor
+	url = https://github.com/nsu-syspro/first-task-first-variant-andreyegor
