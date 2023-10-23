@@ -4,15 +4,15 @@ import indiana_test
 
 
 def solution(data: str) -> int:
-    lines = ([int(q) for q in e.split()] for e in data.split("\n"))
-    power, q_nodes, q_edges = next(lines)
+    lines = data.splitlines()
+    power, q_nodes, q_edges = [int(e) for e in lines[0].split()]
     graph = [[float("inf")] * q_nodes for i in range(q_nodes)]
     graph[0][0] = 0
-    for i in range(q_edges):
-        node1, node2, weight = next(lines)
+    for i in range(1, q_edges + 1):
+        node1, node2, weight = [int(e) for e in lines[i].split()]
         graph[node1][node2] = weight
         graph[node2][node1] = weight
-    nodes = [next(lines)[0] for i in range(q_nodes)]
+    nodes = [int(lines[i]) for i in range(q_edges + 1, q_edges + q_nodes + 1)]
 
     weights = [float("inf")] * q_nodes
     weights[0] = 0
@@ -31,3 +31,4 @@ def solution(data: str) -> int:
 
 if __name__ == "__main__":
     indiana_test.test1()
+    indiana_test.test2()
