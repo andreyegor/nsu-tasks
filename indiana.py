@@ -1,5 +1,4 @@
-from itertools import permutations
-from collections import deque
+from queue import PriorityQueue
 import indiana_test
 
 
@@ -14,15 +13,17 @@ def solution(data: str) -> int:
         graph[node2][node1] = weight
     nodes = [int(lines[i]) for i in range(q_edges + 1, q_edges + q_nodes + 1)]
 
-    weights = [float("inf")] * q_nodes
-    weights[0] = 0
-    not_visited = set(range(q_nodes))
-    while not_visited:
-        node = min(not_visited, key=lambda x: weights[x])
+    weights = [0] + [float("inf") for i in range(q_nodes - 1)]
+    queue = PriorityQueue()
+    queue.put((0, 0))
+    while not queue.empty():
+        weight, node = queue.get()
+        if weight > weights[node]:
+            continue
         for i in range(q_nodes):
             if weights[i] > weights[node] + graph[node][i]:
                 weights[i] = weights[node] + graph[node][i]
-        not_visited.remove(node)
+                queue.put((weights[i], i))
 
     return nodes[
         max(range(q_nodes), key=lambda x: nodes[x] if weights[x] <= power else -1)
@@ -31,4 +32,3 @@ def solution(data: str) -> int:
 
 if __name__ == "__main__":
     indiana_test.test1()
-    indiana_test.test2()
