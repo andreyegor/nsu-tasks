@@ -8,8 +8,10 @@ def format_table(benchmarks, algos, results):
     columns_width = [
         len(max(heading[i], *[line[i] for line in lines])) for i in range(len(heading))
     ]
-    
-    normalized_heading = [heading[i].ljust(columns_width[i]) for i in range(len(heading))]
+
+    normalized_heading = [
+        heading[i].ljust(columns_width[i]) for i in range(len(heading))
+    ]
     print("|" + "|".join(normalized_heading) + "|")
     print("|" + "-" * len("|".join(normalized_heading)) + "|")
     for line in lines:
