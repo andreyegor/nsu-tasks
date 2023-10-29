@@ -41,8 +41,7 @@ signed int s2i(const char* line, int base, jmp_buf buf) {
         sign = -1;
         len--;
     }
-    unsigned int limit = sign > 0 ? 0 : 1;
-    for (int i = 0; i < (sizeof(int) * 8) - 1; i++) limit += (1 << i);
+    unsigned int limit = sign > 0 ? INT_MAX : INT_MAX+1;
 
     unsigned int n = 0;
     for (int i = sign > 0 ? 0 : 1; i < len; i++) {
