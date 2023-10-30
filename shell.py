@@ -9,7 +9,7 @@ from typing import TextIO
 
 class engine:
     def __init__(self):
-        self.working_dir = Path(__file__).parent
+        self.working_dir = Path(os.getcwd())
 
     def __write(self, file: Path, text: str, mode="w"):
         if not file.is_absolute():
@@ -30,9 +30,10 @@ class engine:
                     out = f"{command}: command not found"
                 for file, mode in write_add_to:
                     try:
-                        self.__write(file, mode, out)
+                        self.__write(Path(file), out, mode)
                     except FileNotFoundError:
                         print(f"'{file}': No such file or directory")
+                    out = ""
                 options, data = [], []
                 write_add_to, write_add_to_mode = [], False
                 command = None
@@ -108,6 +109,9 @@ class engine:
 
 eng = engine()
 def solution(script: TextIO, output: TextIO) -> None:
+    global eng
+    if __name__ != "__main__":
+        eng = engine()
     for line in script:
         out = eng.parse(line)
         output.write(out + "\n" if out else "")
