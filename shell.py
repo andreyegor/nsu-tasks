@@ -7,104 +7,107 @@ from pathlib import Path
 from typing import TextIO
 
 
-class environment:
+class engine:
     def __init__(self):
         self.working_dir = Path(__file__).parent
 
-    def __wrapper(f=None, aliases={}, bool_aliases={}):
-        def wrapper(f):
-            f.__aliases__ = aliases
-            f.__bool_aliases__ = bool_aliases
-            return f
+    def __write(self, file: Path, text: str, mode="w"):
+        if not file.is_absolute():
+            file = self.working_dir / file
+        with open(file, mode) as f:
+            f.write(text)
 
-        if f != None:
-            return wrapper(f)
-        return wrapper
-    
-    def engine
+    def parse(self, line: str):
+        options, data = [], []
+        write_add_to, write_add_to_mode = [], False
+        command = None
+        out = ""
+        for e in line.split() + ["|"]:
+            if e == "|":
+                out = getattr(self, "_" + command)(options, data + out.split())
+                for file, mode in write_add_to:
+                    try:
+                        self.__write(file, mode, out)
+                    except FileNotFoundError:
+                        print(f"'{file}': No such file or directory")
+                options, data = [], []
+                write_add_to, write_add_to_mode = [], False
+                command = None
+            elif not command:
+                command = e
+            elif e[0] == "-":
+                options.append(e)
+            elif e == ">":
+                write_add_to_mode = "w"
+            elif e == ">>":
+                write_add_to_mode = "r"
+            elif write_add_to_mode:
+                write_add_to.append([e, write_add_to_mode])
+                write_add_to_mode = False
+            else:
+                data.append(e)
+        return out
 
-    @__wrapper
-    def pwd(self, *data):
+    # ниже записаны сами команды, обязательно в формате def _name(self, options:list, data:list)->str
+    def _pwd(self, options, data):
         return str(self.working_dir)
 
-    @__wrapper
-    def cd(self, *data):
+    def _cd(self, options, data):
         in_dir = Path(data[0])
-        if in_dir == "..":
+        if str(in_dir) == "..":
             new_dir = self.working_dir.parent
-        elif in_dir.is_absolute():
-            new_dir /= in_dir
+        elif not in_dir.is_absolute():
+            new_dir = self.working_dir / in_dir
         else:
             new_dir = in_dir
 
         if new_dir.is_dir():
             self.working_dir = new_dir
-            return False
-        raise IsADirectoryError
+            return ""
+        return f"'{in_dir}': No such file or directory"
 
-    @__wrapper
-    def mkdir(self, *data):
+    def _mkdir(self, options, data):
         in_dir = Path(data[0])
-        dir_dir = self.working_dir / in_dir
-        os.mkdir(dir_dir)  # рэйсит ошибку
+        if not in_dir.is_absolute():
+            new_dir = self.working_dir / in_dir
+        else:
+            new_dir = in_dir
 
-    @__wrapper
-    def ls(self, *data):
-        return "\n".join(os.listdir(self.working_dir))
+        try:
+            os.mkdir(new_dir)
+            return ""
+        except FileNotFoundError:
+            return f"‘{in_dir}’: No such file or directory"
+        except FileExistsError:
+            return f"‘{in_dir}’: File or directory alredy exists"
 
-    @__wrapper
-    def cat(self, *data):
+    # рэйсит ошибку
+
+    def _ls(self, options, data):
+        return "\n".join(sorted(os.listdir(self.working_dir)))
+
+    def _cat(self, options, data):
         out = ""
         for file in data:
-            path =self.working_dir / file
+            path = self.working_dir / file
             if not path.is_file():
-                out += f"{path}: No such file or directory"
+                out += f"'{path}': No such file or directory"
                 continue
             with open(path) as f:
                 out += f.read()
         return out
 
-    @__wrapper
-    def tac(self, *data):
+    def _tac(self, options, data):
         return self.cat(*data)[::-1]
 
-    @__wrapper(aliases={"L": "level", "P": "pattern"})
-    def tree(self, level=float("inf"), pattern=".*", *data):
+    def _tree(self, options, data):
         ...
 
 
 def solution(script: TextIO, output: TextIO) -> None:
-    env = environment()
+    eng = engine()
     for line in script:
-        commands = line.split("|")
-        out = ""
-        for command in commands:
-            command, *write_to = command.split(">")
-            
-            олег = iter(command.split())
-            func = getattr(env, next(олег))
-            data = []
-            kwargs = {}
-            while True:
-                try:
-                    word = next(олег)
-                    if word.startswith("-"):
-                        if word[1] in func.__bool_aliases__:
-                            kwargs[word[1:]] = True
-                        elif word[1] in func.__aliases__:
-                            kwargs[word[1:]] = next(олег)
-                        else:
-                            ...  # когда нет алиаса
-                    data.append(word)
-                except StopIteration:
-                    break
-            
-            out = func(*data, **kwargs)
-            
-            
-
-        output.write(out + "\n")
-
+        output.write(eng.parse(line) + "\n")
 
 if __name__ == "__main__":
     print("$ ", end="")
