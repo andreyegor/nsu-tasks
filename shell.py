@@ -24,7 +24,10 @@ class engine:
         out = ""
         for e in line.split() + ["|"]:
             if e == "|":
-                out = getattr(self, "_" + command)(options, data + out.split())
+                try:
+                    out = getattr(self, "_" + command)(options, data + out.split())
+                except AttributeError:
+                    out = f"{command}: command not found"
                 for file, mode in write_add_to:
                     try:
                         self.__write(file, mode, out)
@@ -84,7 +87,7 @@ class engine:
     # рэйсит ошибку
 
     def _ls(self, options, data):
-        return "\n".join(sorted(os.listdir(self.working_dir)))
+        return " ".join(sorted(os.listdir(self.working_dir)))
 
     def _cat(self, options, data):
         out = ""
@@ -103,11 +106,11 @@ class engine:
     def _tree(self, options, data):
         ...
 
-
+eng = engine()
 def solution(script: TextIO, output: TextIO) -> None:
-    eng = engine()
     for line in script:
-        output.write(eng.parse(line) + "\n")
+        out = eng.parse(line)
+        output.write(out + "\n" if out else "")
 
 if __name__ == "__main__":
     print("$ ", end="")
