@@ -7,6 +7,10 @@ from pathlib import Path
 from typing import TextIO
 
 
+def listdir(*args, **kwargs):
+    return sorted(os.listdir(*args, **kwargs))
+
+
 class engine:
     def __init__(self):
         self.working_dir = Path(os.getcwd())
@@ -102,7 +106,7 @@ class engine:
     def _ls(self, options, data):
         _dir = self.working_dir / "".join(data)
         if _dir.is_dir():
-            return " ".join(sorted(os.listdir(_dir)))
+            return " ".join(sorted(listdir(_dir)))
         if _dir.is_file():
             return _dir.name
         return f"cannot access '{''.join(data)}': No such file or directory"
@@ -156,7 +160,7 @@ class engine:
 
             if not _dir.is_dir() or deph >= deph_limit:
                 return
-            dirs = [e for e in os.listdir(_dir) if re.match(pattern, e)]
+            dirs = [e for e in listdir(_dir) if re.match(pattern, e)]
             if not dirs:
                 if deph == 0 and in_path:
                     out = str(in_path) + "\n"  # ??? тест 9 и тест 11
