@@ -23,33 +23,34 @@ class engine:
         command = None
         out = ""
         for e in line.split() + ["|"]:
-            if e == "|":
-                try:
-                    out = getattr(self, "_" + command)(options, data + out.split())
-                except AttributeError:
-                    out = f"{command}: command not found"
-                for file, mode in write_add_to:
+            match e:
+                case "|":
                     try:
-                        self.__write(Path(file), out, mode)
-                    except FileNotFoundError:
-                        print(f"'{file}': No such file or directory")
-                    out = ""
-                options, data = [], []
-                write_add_to, write_add_to_mode = [], False
-                command = None
-            elif not command:
-                command = e
-            elif e[0] == "-":
-                options.append(e)
-            elif e == ">":
-                write_add_to_mode = "w"
-            elif e == ">>":
-                write_add_to_mode = "r"
-            elif write_add_to_mode:
-                write_add_to.append([e, write_add_to_mode])
-                write_add_to_mode = False
-            else:
-                data.append(e)
+                        out = getattr(self, "_" + command)(options, data + out.split())
+                    except AttributeError:
+                        out = f"{command}: command not found"
+                    for file, mode in write_add_to:
+                        try:
+                            self.__write(Path(file), out, mode)
+                        except FileNotFoundError:
+                            print(f"'{file}': No such file or directory")
+                        out = ""
+                    options, data = [], []
+                    write_add_to, write_add_to_mode = [], False
+                    command = None
+                case l if l[0]=="-":
+                    options.append(e)
+                case ">":
+                    write_add_to_mode = "w"
+                case ">>":
+                    write_add_to_mode = "r"
+                case _ if write_add_to_mode:
+                    write_add_to.append([e, write_add_to_mode])
+                    write_add_to_mode = False
+                case _ if not command:
+                    command = e
+                case _:
+                    data.append(e)
         return out
 
     # ниже записаны сами команды, обязательно в формате def _name(self, options:list, data:list)->str
