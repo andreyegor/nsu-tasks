@@ -1,5 +1,6 @@
 import io
 import os
+import re
 import sys
 from collections import deque
 from pathlib import Path
@@ -105,6 +106,19 @@ class engine:
 
     def _tree(self, options, data):
         out = "."
+        pattern = ".*"
+        deph_limit = float("inf")
+        for option, value in zip(options, data):
+            match option:
+                case "-L":
+                    try:
+                        deph_limit = int(value)
+                    except:
+                        return f"invalid option '{option}' value"
+                case "-P":
+                    pattern = value
+                case _:
+                    return f"invalid option '{option}'"
 
         def dfs(_dir, deph, threads=set(), end=False):
             nonlocal out
@@ -117,9 +131,9 @@ class engine:
                     + (f"└── {_dir.name}" if end else f"├── {_dir.name}")
                 )
 
-            if not _dir.is_dir():
+            if not _dir.is_dir() or deph >= deph_limit:
                 return
-            dirs = os.listdir(_dir)
+            dirs = [e for e in os.listdir(_dir) if re.match(pattern, e)]
             if not dirs:
                 return
 
