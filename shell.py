@@ -14,7 +14,7 @@ class engine:
     def __write(self, file: Path, text: str, mode="w"):
         if not file.is_absolute():
             file = self.working_dir / file
-        with open(file, mode) as f:
+        with open(file, mode, encoding="utf-8") as f:
             f.write(text)
 
     def parse(self, line: str):
@@ -25,25 +25,32 @@ class engine:
         for e in line.split() + ["|"]:
             match e:
                 case "|":
+                    correct_files = []
+                    for file, mode in write_add_to:
+                        try:
+                            f = Path(file)
+                            self.__write(f, out, mode)
+                            correct_files.append(f)
+                        except FileNotFoundError:
+                            print(f"'{file}': No such file or directory")
+
                     try:
                         out = getattr(self, "_" + command)(options, data + out.split())
                     except AttributeError:
                         out = f"{command}: command not found"
-                    for file, mode in write_add_to:
-                        try:
-                            self.__write(Path(file), out, mode)
-                        except FileNotFoundError:
-                            print(f"'{file}': No such file or directory")
+
+                    for f in correct_files:
+                        self.__write(Path(file), out, "a")
                         out = ""
                     options, data = [], []
                     write_add_to, write_add_to_mode = [], False
                     command = None
-                case l if l[0]=="-":
+                case l if l[0] == "-":
                     options.append(e)
                 case ">":
                     write_add_to_mode = "w"
                 case ">>":
-                    write_add_to_mode = "r"
+                    write_add_to_mode = "a"
                 case _ if write_add_to_mode:
                     write_add_to.append([e, write_add_to_mode])
                     write_add_to_mode = False
@@ -54,6 +61,10 @@ class engine:
         return out
 
     # ниже записаны сами команды, обязательно в формате def _name(self, options:list, data:list)->str
+
+    def _echo(self, options, data):
+        return " ".join(data) + "\n"
+
     def _pwd(self, options, data):
         return str(self.working_dir)
 
@@ -89,7 +100,12 @@ class engine:
     # рэйсит ошибку
 
     def _ls(self, options, data):
-        return " ".join(sorted(os.listdir(self.working_dir)))
+        _dir = self.working_dir / "".join(data)
+        if _dir.is_dir():
+            return " ".join(sorted(os.listdir(_dir)))
+        if _dir.is_file():
+            return _dir.name
+        return f"cannot access '{''.join(data)}': No such file or directory"
 
     def _cat(self, options, data):
         out = ""
@@ -98,7 +114,7 @@ class engine:
             if not path.is_file():
                 out += f"'{path}': No such file or directory"
                 continue
-            with open(path) as f:
+            with open(path, "r", encoding="utf-8") as f:
                 out += f.read()
         return out
 
@@ -121,8 +137,14 @@ class engine:
                 case _:
                     return f"invalid option '{option}'"
 
+        _dir = in_path = Path("".join(data[len(options) :]))
+        if not _dir.is_absolute():
+            _dir = self.working_dir / _dir
+        if not _dir.is_dir():
+            return f"'{in_path}': No such file or directory"
+
         def dfs(_dir, deph, threads=set(), end=False):
-            nonlocal out
+            nonlocal out, in_path
             if deph != 0:
                 out += (
                     "\n"
@@ -136,6 +158,8 @@ class engine:
                 return
             dirs = [e for e in os.listdir(_dir) if re.match(pattern, e)]
             if not dirs:
+                if deph == 0 and in_path:
+                    out = str(in_path) + "\n"  # ??? тест 9 и тест 11
                 return
 
             threads.add(deph)
@@ -144,7 +168,9 @@ class engine:
             threads.remove(deph)
             dfs(_dir / dirs[-1], deph + 1, threads, True)
 
-        dfs(self.working_dir, 0)
+        dfs(_dir, 0)
+        if not out.endswith("\n"):
+            out += "\n"
         return out
 
 
