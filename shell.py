@@ -1,8 +1,7 @@
-import functools
 import io
 import os
-import re
 import sys
+from collections import deque
 from pathlib import Path
 from typing import TextIO
 
@@ -102,19 +101,49 @@ class engine:
         return out
 
     def _tac(self, options, data):
-        return self.cat(*data)[::-1]
+        return "\n".join(self._cat(options, data).splitlines()[::-1])
 
     def _tree(self, options, data):
-        ...
+        out = "."
+
+        def dfs(_dir, deph, threads=set(), end=False):
+            nonlocal out
+            if deph != 0:
+                out += (
+                    "\n"
+                    + "".join(
+                        "│   " if i in threads else "    " for i in range(deph - 1)
+                    )
+                    + (f"└── {_dir.name}" if end else f"├── {_dir.name}")
+                )
+
+            if not _dir.is_dir():
+                return
+            dirs = os.listdir(_dir)
+            if not dirs:
+                return
+
+            threads.add(deph)
+            for e in dirs[:-1]:
+                dfs(_dir / e, deph + 1, threads)
+            threads.remove(deph)
+            dfs(_dir / dirs[-1], deph + 1, threads, True)
+
+        dfs(self.working_dir, 0)
+        return out
+
 
 eng = engine()
+
+
 def solution(script: TextIO, output: TextIO) -> None:
     global eng
     if __name__ != "__main__":
         eng = engine()
     for line in script:
         out = eng.parse(line)
-        output.write(out + "\n" if out else "")
+        output.write(out + "\n" if out and len(out) > 1 and out[-1:] != "\n" else out)
+
 
 if __name__ == "__main__":
     print("$ ", end="")
