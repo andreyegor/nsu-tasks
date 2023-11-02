@@ -26,42 +26,45 @@ class engine:
         write_add_to, write_add_to_mode = [], False
         command = None
         out = ""
-        for e in line.split() + ["|"]:
-            match e:
-                case "|":
-                    correct_files = []
-                    for file, mode in write_add_to:
-                        try:
-                            f = Path(file)
-                            self.__write(f, out, mode)
-                            correct_files.append(f)
-                        except FileNotFoundError:
-                            print(f"'{file}': No such file or directory")
+        for pipe in line.split("|"):
+            left, middle, right = pipe, [], ""
+            if '"' in pipe:
+                left, *middle, right = pipe.split('"')
+            for e in left.split() + middle + right.split():
+                match e:
+                    case l if l[0] == "-":
+                        options.append(e)
+                    case ">":
+                        write_add_to_mode = "w"
+                    case ">>":
+                        write_add_to_mode = "a"
+                    case _ if write_add_to_mode:
+                        write_add_to.append([e, write_add_to_mode])
+                        write_add_to_mode = False
+                    case _ if not command:
+                        command = e
+                    case _:
+                        data.append(e)
+            correct_files = []
+            for file, mode in write_add_to:
+                try:
+                    f = Path(file)
+                    self.__write(f, out, mode)
+                    correct_files.append(f)
+                except FileNotFoundError:
+                    print(f"'{file}': No such file or directory")
 
-                    try:
-                        out = getattr(self, "_" + command)(options, data + out.split())
-                    except AttributeError:
-                        out = f"{command}: command not found"
+            try:
+                out = getattr(self, "_" + command)(options, data + out.split())
+            except StopAsyncIteration:
+                out = f"{command}: command not found"
 
-                    for f in correct_files:
-                        self.__write(Path(file), out, "a")
-                        out = ""
-                    options, data = [], []
-                    write_add_to, write_add_to_mode = [], False
-                    command = None
-                case l if l[0] == "-":
-                    options.append(e)
-                case ">":
-                    write_add_to_mode = "w"
-                case ">>":
-                    write_add_to_mode = "a"
-                case _ if write_add_to_mode:
-                    write_add_to.append([e, write_add_to_mode])
-                    write_add_to_mode = False
-                case _ if not command:
-                    command = e
-                case _:
-                    data.append(e)
+            for f in correct_files:
+                self.__write(Path(file), out, "a")
+                out = ""
+            options, data = [], []
+            write_add_to, write_add_to_mode = [], False
+            command = None
         return out
 
     # ниже записаны сами команды, обязательно в формате def _name(self, options:list, data:list)->str
@@ -126,7 +129,6 @@ class engine:
         return "\n".join(self._cat(options, data).splitlines()[::-1])
 
     def _tree(self, options, data):
-        out = "."
         pattern = ".*"
         deph_limit = float("inf")
         for option, value in zip(options, data):
@@ -147,35 +149,48 @@ class engine:
         if not _dir.is_dir():
             return f"'{in_path}': No such file or directory"
 
-        def dfs(_dir, deph, threads=set(), end=False):
-            nonlocal out, in_path
+        # os.walk
+        def dfs_filter(_dir: Path, deph=0, visibility=False):
+            if deph_limit <= deph or not _dir.is_dir():
+                return [_dir] if re.fullmatch(pattern, _dir.name) else []
+            if re.fullmatch(pattern, _dir.name):
+                visibility = True
+            dirs = [_dir / e for e in listdir(_dir)]
+            out = dirs if visibility else []
+            for e in frozenset(dirs):
+                out += dfs_filter(e, deph + 1, visibility)
+            return out
+
+        filtered = [str(e) for e in dfs_filter(_dir)]
+        out = "."
+
+        def dfs_write(_dir, deph = 0, branches=set(), end=False):
+            nonlocal out, in_path, filtered
             if deph != 0:
                 out += (
                     "\n"
                     + "".join(
-                        "│   " if i in threads else "    " for i in range(deph - 1)
+                        "│   " if i in branches else "    " for i in range(deph - 1)
                     )
                     + (f"└── {_dir.name}" if end else f"├── {_dir.name}")
                 )
-
-            if not _dir.is_dir() or deph >= deph_limit:
-                return
-            dirs = [e for e in listdir(_dir) if re.match(pattern, e)]
+            dirs = [
+                c
+                for e in listdir(_dir)
+                if (c := Path(e).absolute()) and any(q.startswith(str(c)) for q in filtered)
+            ]
             if not dirs:
                 if deph == 0 and in_path:
                     out = str(in_path) + "\n"  # ??? тест 9 и тест 11
                 return
 
-            threads.add(deph)
+            branches.add(deph)
             for e in dirs[:-1]:
-                dfs(_dir / e, deph + 1, threads)
-            threads.remove(deph)
-            dfs(_dir / dirs[-1], deph + 1, threads, True)
+                dfs_write(_dir / e, deph + 1, branches)
+            branches.remove(deph)
+            dfs_write(_dir / dirs[-1], deph + 1, branches, True)
 
-        dfs(_dir, 0)
-        if not out.endswith("\n"):
-            out += "\n"
-        return out
+        return str(dfs_write(_dir))
 
 
 eng = engine()
