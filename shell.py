@@ -56,9 +56,13 @@ class engine:
                     print(f"'{file}': No such file or directory")
 
             try:
+                if command.startswith("_"):
+                    raise AttributeError
                 out = getattr(self, "_" + command)(options, data + out.split())
             except AttributeError:
                 out = f"{command}: command not found"
+            except:
+                out = "Unknown error"
 
             for f in correct_files:
                 self.__write(Path(file), out, "a")
@@ -105,8 +109,6 @@ class engine:
         except FileExistsError:
             return f"‘{in_dir}’: File or directory alredy exists"
 
-    # рэйсит ошибку
-
     def _ls(self, options, data):
         _dir = self.working_dir / "".join(data)
         if _dir.is_dir():
@@ -130,13 +132,8 @@ class engine:
         return "\n".join(self._cat(options, data).splitlines()[::-1])
 
     def _tree(self, options, data):
-        space = "    "
-        branch = "│   "
-        middle = "├── "
-        last = "└── "
-
         out = "."
-        pattern = ""
+        pattern = ".*"
         deph_limit = float("inf")
         for option, value in zip(options, data):
             match option:
@@ -158,18 +155,26 @@ class engine:
 
         def dfs(_dir, deph, branches=set(), end=False):
             nonlocal out, in_path
+            space = "    "
+            branch = "│   "
+            middle = "├── "
+            last = "└── "
             if deph != 0:
                 out += (
                     "\n"
                     + "".join(
                         branch if i in branches else space for i in range(deph - 1)
                     )
-                    + (f"{last}{_dir.name}" if end else f"{middle}{_dir.name}")
+                    + (last + _dir.name if end else middle + _dir.name)
                 )
 
             if not _dir.is_dir() or deph >= deph_limit:
                 return
-            dirs = [e for e in listdir(_dir) if (_dir/e).is_dir() or re.match(pattern, str(e))]
+            dirs = [
+                e
+                for e in listdir(_dir)
+                if (_dir / e).is_dir() or re.match(pattern, str(e))
+            ]
             if not dirs:
                 if deph == 0 and in_path:
                     out = str(in_path) + "\n"  # ??? тест 9 и тест 11
