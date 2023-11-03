@@ -3,6 +3,7 @@ import os
 import re
 import sys
 from collections import deque
+from functools import reduce
 from pathlib import Path
 from typing import TextIO
 
@@ -56,7 +57,7 @@ class engine:
 
             try:
                 out = getattr(self, "_" + command)(options, data + out.split())
-            except StopAsyncIteration:
+            except AttributeError:
                 out = f"{command}: command not found"
 
             for f in correct_files:
@@ -129,7 +130,13 @@ class engine:
         return "\n".join(self._cat(options, data).splitlines()[::-1])
 
     def _tree(self, options, data):
-        pattern = ".*"
+        space = "    "
+        branch = "│   "
+        middle = "├── "
+        last = "└── "
+
+        out = "."
+        pattern = ""
         deph_limit = float("inf")
         for option, value in zip(options, data):
             match option:
@@ -149,36 +156,20 @@ class engine:
         if not _dir.is_dir():
             return f"'{in_path}': No such file or directory"
 
-        # os.walk
-        def dfs_filter(_dir: Path, deph=0, visibility=False):
-            if deph_limit <= deph or not _dir.is_dir():
-                return [_dir] if re.fullmatch(pattern, _dir.name) else []
-            if re.fullmatch(pattern, _dir.name):
-                visibility = True
-            dirs = [_dir / e for e in listdir(_dir)]
-            out = dirs if visibility else []
-            for e in frozenset(dirs):
-                out += dfs_filter(e, deph + 1, visibility)
-            return out
-
-        filtered = [str(e) for e in dfs_filter(_dir)]
-        out = "."
-
-        def dfs_write(_dir, deph = 0, branches=set(), end=False):
-            nonlocal out, in_path, filtered
+        def dfs(_dir, deph, branches=set(), end=False):
+            nonlocal out, in_path
             if deph != 0:
                 out += (
                     "\n"
                     + "".join(
-                        "│   " if i in branches else "    " for i in range(deph - 1)
+                        branch if i in branches else space for i in range(deph - 1)
                     )
-                    + (f"└── {_dir.name}" if end else f"├── {_dir.name}")
+                    + (f"{last}{_dir.name}" if end else f"{middle}{_dir.name}")
                 )
-            dirs = [
-                c
-                for e in listdir(_dir)
-                if (c := Path(e).absolute()) and any(q.startswith(str(c)) for q in filtered)
-            ]
+
+            if not _dir.is_dir() or deph >= deph_limit:
+                return
+            dirs = [e for e in listdir(_dir) if (_dir/e).is_dir() or re.match(pattern, str(e))]
             if not dirs:
                 if deph == 0 and in_path:
                     out = str(in_path) + "\n"  # ??? тест 9 и тест 11
@@ -186,11 +177,14 @@ class engine:
 
             branches.add(deph)
             for e in dirs[:-1]:
-                dfs_write(_dir / e, deph + 1, branches)
+                dfs(_dir / e, deph + 1, branches)
             branches.remove(deph)
-            dfs_write(_dir / dirs[-1], deph + 1, branches, True)
+            dfs(_dir / dirs[-1], deph + 1, branches, True)
 
-        return str(dfs_write(_dir))
+        dfs(_dir, 0)
+        if not out.endswith("\n"):
+            out += "\n"
+        return out
 
 
 eng = engine()
