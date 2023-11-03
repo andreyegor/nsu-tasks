@@ -177,7 +177,7 @@ class engine:
             ]
             if not dirs:
                 if deph == 0 and in_path:
-                    out = str(in_path) + "\n"  # ??? тест 9 и тест 11
+                    out = str(in_path) + "\n"
                 return
 
             branches.add(deph)
