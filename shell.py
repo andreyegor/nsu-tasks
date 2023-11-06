@@ -196,7 +196,7 @@ class engine:
         pattern = data[0]
         count = False
         recursive = False
-        for option, value in zip(options, data):
+        for option in options:
             match option:
                 case "-c":
                     count = True
@@ -233,15 +233,18 @@ class engine:
                 for line in f.readlines():
                     if re.search(pattern, line):
                         cnt+=1
+                        if count:
+                            continue
+                        if not line.endswith("\n"):
+                            line+='\n'
                         if recursive:
-                            out+=f"{file.name}: {line}"
+                            out+=f"{file.name}:{line}"
                         else:
                             out+=f"{line}"
-            if count:
-                if recursive:
-                    out+=f"{file.name}: {cnt}\n"
-                else:
+                if cnt>1:
                     out+=f"{cnt}\n"
+                if count:
+                    out+=f"{file.name}:{cnt}\n"
         return out
 
 
