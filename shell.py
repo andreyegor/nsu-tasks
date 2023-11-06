@@ -5,6 +5,7 @@ import sys
 from collections import deque
 from functools import reduce
 from pathlib import Path
+from queue import Queue
 from typing import TextIO
 
 
@@ -61,8 +62,8 @@ class engine:
                 out = getattr(self, "_" + command)(options, data + out.split())
             except AttributeError:
                 out = f"{command}: command not found"
-            except:
-                out = "Unknown error"
+            # except:
+            #     out = "Unknown error"
 
             for f in correct_files:
                 self.__write(Path(file), out, "a")
@@ -189,6 +190,58 @@ class engine:
         dfs(_dir, 0)
         if not out.endswith("\n"):
             out += "\n"
+        return out
+
+    def _grep(self, options, data):
+        pattern = data[0]
+        count = False
+        recursive = False
+        for option, value in zip(options, data):
+            match option:
+                case "-c":
+                    count = True
+                case "-r":
+                    recursive = True
+                case _:
+                    return f"invalid option '{option}'"
+
+        path = in_path = Path("".join(data[1:]))
+        if not in_path.is_absolute():
+            path = self.working_dir / in_path
+
+        files = Queue()
+        if path.is_file():
+            files.put(path)
+        elif not recursive or not path.is_absolute():
+            return f"'{in_path}': No such file or directory"
+        else:
+            _dirs = Queue()
+            _dirs.put(path)
+            while not _dirs.empty():
+                _dir = _dirs.get()
+                for e in listdir(_dir):
+                    new_path = _dir / e
+                    if new_path.is_file():
+                        files.put(new_path)
+                    else:
+                        _dirs.put(new_path)
+        out = ""
+        while not files.empty():
+            cnt = 0
+            file = files.get()
+            with open(file, "r", encoding="utf-8") as f:
+                for line in f.readlines():
+                    if re.search(pattern, line):
+                        cnt+=1
+                        if recursive:
+                            out+=f"{file.name}: {line}"
+                        else:
+                            out+=f"{line}"
+            if count:
+                if recursive:
+                    out+=f"{file.name}: {cnt}\n"
+                else:
+                    out+=f"{cnt}\n"
         return out
 
 
