@@ -19,16 +19,16 @@ int* findSubArr(int* arr1, size_t len1, int* arr2, size_t len2) {
     return NULL;
 }
 
-int removeSubArr(int* arr1, size_t len1, int* arr2, size_t len2){
+int removeSubArr(int** arr1, size_t len1, int* arr2, size_t len2){
     int* subarr;
-    while ((subarr = findSubArr(arr1, len1, arr2, len2))!=NULL){
+    while ((subarr = findSubArr(*arr1, len1, arr2, len2))!=NULL){
         len1-=len2;
         for (size_t i =0; i<len1; i++){
             subarr[i] = subarr[i+len2];
         }
     }
-    arr1 = (int*) realloc(arr1, len1*sizeof(int));
-    of_check(arr1);
+    *arr1 = (int*) realloc(*arr1, len1*sizeof(int));
+    of_check(*arr1);
     return len1;
 }
 
@@ -44,7 +44,7 @@ int main() {
     of_check(arr2);
     for (size_t i = 0; i < len2; i++) scanf("%d", &arr2[i]);
 
-    len1 = removeSubArr(arr1, len1, arr2, len2);
+    len1 = removeSubArr(&arr1, len1, arr2, len2);
     for (size_t i = 0; i <len1; i++) printf("%d ", arr1[i]);
     free(arr1);
     free(arr2);
