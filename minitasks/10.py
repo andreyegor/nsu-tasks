@@ -7,11 +7,10 @@ class LRUCache:
         self.capacity = capacity
 
     def get(self, key):
-        try:
+        if key in self.cache:
             self.cache.move_to_end(key)
             return self.cache[key]
-        except:
-            return None
+        return None
 
     def put(self, key, value):
         self.cache[key] = value
