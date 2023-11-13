@@ -13,7 +13,7 @@ def listdir(*args, **kwargs):
     return sorted(os.listdir(*args, **kwargs))
 
 
-class engine:
+class Engine:
     def __init__(self):
         self.working_dir = Path(os.getcwd())
 
@@ -34,8 +34,8 @@ class engine:
                 left, *middle, right = pipe.split('"')
             for e in left.split() + middle + right.split():
                 match e:
-                    case l if l[0] == "-":
-                        options.append(e)
+                    case _ if not command:
+                        command = e
                     case ">":
                         write_add_to_mode = "w"
                     case ">>":
@@ -43,18 +43,20 @@ class engine:
                     case _ if write_add_to_mode:
                         write_add_to.append([e, write_add_to_mode])
                         write_add_to_mode = False
-                    case _ if not command:
-                        command = e
+                    case _ if write_add_to:
+                        break
+                    case l if l[0] == "-":
+                        options.append(e)
                     case _:
                         data.append(e)
             correct_files = []
             for file, mode in write_add_to:
-                try:
-                    f = Path(file)
-                    self.__write(f, out, mode)
-                    correct_files.append(f)
-                except FileNotFoundError:
+                f = Path(file)
+                if not Path(f.parent).is_dir or (not f.is_file() and (mode == "a")):
                     print(f"'{file}': No such file or directory")
+                    continue
+                self.__write(f, out, mode)
+                correct_files.append(f)
 
             try:
                 if command.startswith("_"):
@@ -62,8 +64,8 @@ class engine:
                 out = getattr(self, "_" + command)(options, data + out.split())
             except AttributeError:
                 out = f"{command}: command not found"
-            # except:
-            #     out = "Unknown error"
+            except:
+                out = "Unknown error"
 
             for f in correct_files:
                 self.__write(Path(file), out, "a")
@@ -232,29 +234,29 @@ class engine:
             with open(file, "r", encoding="utf-8") as f:
                 for line in f.readlines():
                     if re.search(pattern, line):
-                        cnt+=1
+                        cnt += 1
                         if count:
                             continue
                         if not line.endswith("\n"):
-                            line+='\n'
+                            line += "\n"
                         if recursive:
-                            out+=f"{file.name}:{line}"
+                            out += f"{file.name}:{line}"
                         else:
-                            out+=f"{line}"
-                if cnt>1:
-                    out+=f"{cnt}\n"
+                            out += f"{line}"
+                if cnt > 1:
+                    out += f"{cnt}\n"
                 if count:
-                    out+=f"{file.name}:{cnt}\n"
+                    out += f"{file.name}:{cnt}\n"
         return out
 
 
-eng = engine()
+eng = Engine()
 
 
 def solution(script: TextIO, output: TextIO) -> None:
     global eng
     if __name__ != "__main__":
-        eng = engine()
+        eng = Engine()
     for line in script:
         out = eng.parse(line)
         output.write(out + "\n" if out and len(out) > 1 and out[-1:] != "\n" else out)
