@@ -76,10 +76,10 @@ class Engine:
                     continue
                 self._write(f, out, mode)
                 correct_files.append(f)
-
-            out = command(options, data)
-            # except:
-            #     out = "Unknown error"
+            try:
+                out = command(options, data)
+            except:
+                out = "Unknown error"
 
             for f in correct_files:
                 self._write(Path(file), out, "a")
