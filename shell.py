@@ -64,8 +64,8 @@ class Engine:
                 out = getattr(self, "_" + command)(options, data + out.split())
             except AttributeError:
                 out = f"{command}: command not found"
-            except:
-                out = "Unknown error"
+            # except:
+            #     out = "Unknown error"
 
             for f in correct_files:
                 self.__write(Path(file), out, "a")
@@ -84,18 +84,12 @@ class Engine:
         return str(self.working_dir)
 
     def _cd(self, options, data):
-        in_dir = Path(data[0])
-        if str(in_dir) == "..":
-            new_dir = self.working_dir.parent
-        elif not in_dir.is_absolute():
-            new_dir = self.working_dir / in_dir
-        else:
-            new_dir = in_dir
-
-        if new_dir.is_dir():
-            self.working_dir = new_dir
+        try:
+            os.chdir(self.working_dir.parent if data[0] ==".." else data[0])
+            self.working_dir = Path(os.getcwd())
             return ""
-        return f"'{in_dir}': No such file or directory"
+        except FileNotFoundError:
+            return f"'{data[0]}': No such file or directory"
 
     def _mkdir(self, options, data):
         in_dir = Path(data[0])
