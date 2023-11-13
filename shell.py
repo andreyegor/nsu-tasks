@@ -1,3 +1,4 @@
+import functools
 import io
 import os
 import re
@@ -17,81 +18,97 @@ class Engine:
     def __init__(self):
         self.working_dir = Path(os.getcwd())
 
-    def __write(self, file: Path, text: str, mode="w"):
+    def _write(self, file: Path, text: str, mode="w"):
         if not file.is_absolute():
             file = self.working_dir / file
         with open(file, mode, encoding="utf-8") as f:
             f.write(text)
 
+    def _command(options=None):
+        def inner(f):
+            f.__command_options__ = {} if options == None else options
+            return f
+
+        return inner
+
     def parse(self, line: str):
-        options, data = [], []
-        write_add_to, write_add_to_mode = [], False
         command = None
         out = ""
+        data, options = [], {}
+        write_data, write_mode = [], False
+        wait_for_opt = 0
         for pipe in line.split("|"):
             left, middle, right = pipe, [], ""
             if '"' in pipe:
                 left, *middle, right = pipe.split('"')
-            for e in left.split() + middle + right.split():
-                match e:
+            for token in left.split() + middle + right.split():
+                match token:
                     case _ if not command:
-                        command = e
+                        try:
+                            command = getattr(self, token)
+                            command.__command_options__
+                        except AttributeError:
+                            return f"{token}: command not found"
+                    case _ if wait_for_opt:
+                        options[list(options.keys())[-1]].append(token)
+                        wait_for_opt -= 1
                     case ">":
-                        write_add_to_mode = "w"
+                        write_mode = "w"
                     case ">>":
-                        write_add_to_mode = "a"
-                    case _ if write_add_to_mode:
-                        write_add_to.append([e, write_add_to_mode])
-                        write_add_to_mode = False
-                    case _ if write_add_to:
+                        write_mode = "a"
+                    case _ if write_mode:
+                        write_data.append([token, write_mode])
+                        write_mode = False
+                    case _ if write_data:
                         break
-                    case l if l[0] == "-":
-                        options.append(e)
+                    case token if token[0] == "-":
+                        if token not in command.__command_options__:
+                            return f"invalid option '{token}'"
+                        wait_for_opt = command.__command_options__[token]
+                        options[token] = []
                     case _:
-                        data.append(e)
+                        data.append(token)
             correct_files = []
-            for file, mode in write_add_to:
+            for file, mode in write_data:
                 f = Path(file)
                 if not Path(f.parent).is_dir or (not f.is_file() and (mode == "a")):
                     print(f"'{file}': No such file or directory")
                     continue
-                self.__write(f, out, mode)
+                self._write(f, out, mode)
                 correct_files.append(f)
 
-            try:
-                if command.startswith("_"):
-                    raise AttributeError
-                out = getattr(self, "_" + command)(options, data + out.split())
-            except AttributeError:
-                out = f"{command}: command not found"
+            out = command(options, data)
             # except:
             #     out = "Unknown error"
 
             for f in correct_files:
-                self.__write(Path(file), out, "a")
+                self._write(Path(file), out, "a")
                 out = ""
             options, data = [], []
-            write_add_to, write_add_to_mode = [], False
+            write_data, write_mode = [], False
             command = None
         return out
 
     # ниже записаны сами команды, обязательно в формате def _name(self, options:list, data:list)->str
-
-    def _echo(self, options, data):
+    @_command()
+    def echo(self, options, data):
         return " ".join(data) + "\n"
 
-    def _pwd(self, options, data):
+    @_command()
+    def pwd(self, options, data):
         return str(self.working_dir)
 
-    def _cd(self, options, data):
+    @_command()
+    def cd(self, options, data):
         try:
-            os.chdir(self.working_dir.parent if data[0] ==".." else data[0])
+            os.chdir(self.working_dir.parent if data[0] == ".." else data[0])
             self.working_dir = Path(os.getcwd())
             return ""
         except FileNotFoundError:
             return f"'{data[0]}': No such file or directory"
 
-    def _mkdir(self, options, data):
+    @_command()
+    def mkdir(self, options, data):
         in_dir = Path(data[0])
         if not in_dir.is_absolute():
             new_dir = self.working_dir / in_dir
@@ -106,7 +123,8 @@ class Engine:
         except FileExistsError:
             return f"‘{in_dir}’: File or directory alredy exists"
 
-    def _ls(self, options, data):
+    @_command()
+    def ls(self, options, data):
         _dir = self.working_dir / "".join(data)
         if _dir.is_dir():
             return " ".join(sorted(listdir(_dir)))
@@ -114,7 +132,8 @@ class Engine:
             return _dir.name
         return f"cannot access '{''.join(data)}': No such file or directory"
 
-    def _cat(self, options, data):
+    @_command()
+    def cat(self, options, data):
         out = ""
         for file in data:
             path = self.working_dir / file
@@ -125,24 +144,24 @@ class Engine:
                 out += f.read()
         return out
 
-    def _tac(self, options, data):
-        return "\n".join(self._cat(options, data).splitlines()[::-1])
+    @_command()
+    def tac(self, options, data):
+        return "\n".join(self.cat(options, data).splitlines()[::-1])
 
-    def _tree(self, options, data):
+    @_command(options={"-L": 1, "-P": 1})
+    def tree(self, options, data):
         out = "."
         pattern = ".*"
         deph_limit = float("inf")
-        for option, value in zip(options, data):
+        for option, value in options.items():
             match option:
                 case "-L":
                     try:
-                        deph_limit = int(value)
+                        deph_limit = int(value[0])
                     except:
                         return f"invalid option '{option}' value"
                 case "-P":
-                    pattern = value
-                case _:
-                    return f"invalid option '{option}'"
+                    pattern = value[0]
 
         _dir = in_path = Path("".join(data[len(options) :]))
         if not _dir.is_absolute():
@@ -188,7 +207,8 @@ class Engine:
             out += "\n"
         return out
 
-    def _grep(self, options, data):
+    @_command(options={"-c": 1, "-r": 1})
+    def grep(self, options, data):
         pattern = data[0]
         count = False
         recursive = False
