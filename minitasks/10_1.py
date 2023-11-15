@@ -19,6 +19,7 @@ class LRUCache:
             self.cache.popitem(last=False)
 
 
+
 cache = LRUCache(3)
 cache.put("1", "a")
 cache.put("2", "b")
