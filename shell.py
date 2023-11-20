@@ -10,10 +10,6 @@ from queue import Queue
 from typing import TextIO
 
 
-def listdir(*args, **kwargs):
-    return sorted(os.listdir(*args, **kwargs))
-
-
 class Engine:
     def __init__(self):
         self.working_dir = Path(os.getcwd())
@@ -127,7 +123,7 @@ class Engine:
     def ls(self, options, data):
         _dir = self.working_dir / "".join(data)
         if _dir.is_dir():
-            return " ".join(sorted(listdir(_dir)))
+            return " ".join(sorted(os.listdir(_dir)))
         if _dir.is_file():
             return _dir.name
         return f"cannot access '{''.join(data)}': No such file or directory"
@@ -188,7 +184,7 @@ class Engine:
                 return
             dirs = [
                 e
-                for e in listdir(_dir)
+                for e in sorted(os.listdir(_dir))
                 if (_dir / e).is_dir() or re.match(pattern, str(e))
             ]
             if not dirs:
@@ -235,7 +231,7 @@ class Engine:
             _dirs.put(path)
             while not _dirs.empty():
                 _dir = _dirs.get()
-                for e in listdir(_dir):
+                for e in sorted(os.listdir(_dir)):
                     new_path = _dir / e
                     if new_path.is_file():
                         files.put(new_path)
