@@ -15,8 +15,6 @@ class Engine:
         self.working_dir = Path(os.getcwd())
 
     def _write(self, file: Path, text: str, mode="w"):
-        if not file.is_absolute():
-            file = self.working_dir / file
         with open(file, mode, encoding="utf-8") as f:
             f.write(text)
 
@@ -87,7 +85,7 @@ class Engine:
                 correct_files.append(f)
             try:
                 out = command(options, data)
-            except:
+            except ModuleNotFoundError:
                 out = "Unknown error"
 
             for f in correct_files:
@@ -105,13 +103,12 @@ class Engine:
 
     @_command()
     def pwd(self, options, data):
-        return str(self.working_dir)
+        return os.getcwd()
 
     @_command()
     def cd(self, options, data):
         try:
-            os.chdir(self.working_dir.parent if data[0] == ".." else data[0])
-            self.working_dir = Path(os.getcwd())
+            os.chdir(data[0])
             return ""
         except FileNotFoundError:
             return f"'{data[0]}': No such file or directory"
@@ -119,13 +116,8 @@ class Engine:
     @_command()
     def mkdir(self, options, data):
         in_dir = Path(data[0])
-        if not in_dir.is_absolute():
-            new_dir = self.working_dir / in_dir
-        else:
-            new_dir = in_dir
-
         try:
-            os.mkdir(new_dir)
+            os.mkdir(in_dir)
             return ""
         except FileNotFoundError:
             return f"‘{in_dir}’: No such file or directory"
@@ -134,18 +126,14 @@ class Engine:
 
     @_command()
     def ls(self, options, data):
-        _dir = self.working_dir / "".join(data)
-        if _dir.is_dir():
-            return " ".join(sorted(os.listdir(_dir)))
-        if _dir.is_file():
-            return _dir.name
+        return " ".join(sorted(os.listdir(data[0]) if data else os.listdir()))
         return f"cannot access '{''.join(data)}': No such file or directory"
 
     @_command()
     def cat(self, options, data):
         out = ""
-        for file in data:
-            path = self.working_dir / file
+        for file in data:#TODO проще
+            path = Path(file)
             if not path.is_file():
                 out += f"'{path}': No such file or directory"
                 continue
@@ -173,8 +161,6 @@ class Engine:
                     pattern = value[0]
 
         _dir = in_path = Path("".join(data[len(options) :]))
-        if not _dir.is_absolute():
-            _dir = self.working_dir / _dir
         if not _dir.is_dir():
             return f"'{in_path}': No such file or directory"
 
@@ -230,15 +216,13 @@ class Engine:
                 case _:
                     return f"invalid option '{option}'"
 
-        path = in_path = Path("".join(data[1:]))
-        if not in_path.is_absolute():
-            path = self.working_dir / in_path
+        path = Path("".join(data[1:]))
 
         files = Queue()
         if path.is_file():
             files.put(path)
         elif not recursive or not path.is_absolute():
-            return f"'{in_path}': No such file or directory"
+            return f"'{path}': No such file or directory"
         else:
             _dirs = Queue()
             _dirs.put(path)
