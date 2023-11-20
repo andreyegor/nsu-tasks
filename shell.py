@@ -70,7 +70,6 @@ class Engine:
                     case _ if write_data:
                         break
                     case token if token in command.__command_options__:
-                        # TODO тогда примет остальные типа опции как параметр
                         if _out := read_option(token):
                             return _out
                     case _:
@@ -132,7 +131,7 @@ class Engine:
     @_command()
     def cat(self, options, data):
         out = ""
-        for file in data:#TODO проще
+        for file in data:
             path = Path(file)
             if not path.is_file():
                 out += f"'{path}': No such file or directory"
