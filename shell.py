@@ -84,7 +84,7 @@ class Engine:
                 correct_files.append(f)
             try:
                 out = command(options, data)
-            except ModuleNotFoundError:
+            except Exception:
                 out = "Unknown error"
 
             for f in correct_files:
@@ -125,8 +125,10 @@ class Engine:
 
     @_command()
     def ls(self, options, data):
-        return " ".join(sorted(os.listdir(data[0]) if data else os.listdir()))
-        return f"cannot access '{''.join(data)}': No such file or directory"
+        try:
+            return " ".join(sorted(os.listdir(data[0]) if data else os.listdir()))
+        except FileNotFoundError:
+            return f"cannot access '{''.join(data)}': No such file or directory"
 
     @_command()
     def cat(self, options, data):
