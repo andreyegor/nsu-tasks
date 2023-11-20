@@ -12,7 +12,7 @@ from typing import TextIO
 
 class Engine:
     def __init__(self):
-        self.working_dir = Path(os.getcwd())
+        pass
 
     def _write(self, file: Path, text: str, mode="w"):
         with open(file, mode, encoding="utf-8") as f:
