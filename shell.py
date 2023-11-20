@@ -28,6 +28,23 @@ class Engine:
         return inner
 
     def parse(self, line: str):
+        def read_command(token):
+            nonlocal command
+            try:
+                command = getattr(self, token)
+                command.__command_options__
+                return False
+            except AttributeError:
+                return f"{token}: command not found"
+
+        def read_option(token):
+            nonlocal wait_for_opt, options
+            if token not in command.__command_options__:
+                return f"invalid option '{token}'"
+            wait_for_opt = command.__command_options__[token]
+            options[token] = []
+            return False
+
         command = None
         out = ""
         data, options = [], {}
@@ -40,11 +57,8 @@ class Engine:
             for token in left.split() + middle + right.split():
                 match token:
                     case _ if not command:
-                        try:
-                            command = getattr(self, token)
-                            command.__command_options__
-                        except AttributeError:
-                            return f"{token}: command not found"
+                        if _out := read_command(token):
+                            return _out
                     case _ if wait_for_opt:
                         options[list(options.keys())[-1]].append(token)
                         wait_for_opt -= 1
@@ -57,11 +71,10 @@ class Engine:
                         write_mode = False
                     case _ if write_data:
                         break
-                    case token if token[0] == "-":
-                        if token not in command.__command_options__:
-                            return f"invalid option '{token}'"
-                        wait_for_opt = command.__command_options__[token]
-                        options[token] = []
+                    case token if token in command.__command_options__:
+                        # TODO тогда примет остальные типа опции как параметр
+                        if _out := read_option(token):
+                            return _out
                     case _:
                         data.append(token)
             correct_files = []
