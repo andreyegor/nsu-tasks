@@ -10,13 +10,11 @@ class LRUCache:
         self.lru_cnt = defaultdict(int)
 
     def get(self, key: int) -> int:
-        try: 
-            out = self.cache[key]
+        if key in self.cache.keys():
             self.lru.append(key)
             self.lru_cnt[key]+=1
-        except: 
-            out = None
-        return out
+            return self.cache[key]
+        return None
 
     def put(self, key: int, value: int) -> None:
         self.cache[key] = value

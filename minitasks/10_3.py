@@ -5,11 +5,11 @@ class LRUCache:
         self.capacity = capacity
 
     def get(self, key: int) -> int:
-        try: 
+        if key in self.cache.keys(): 
             out = self.cache[key]
             del self.cache[key]
             self.cache[key] = out
-        except: 
+        else: 
             out = None
         return out
 
