@@ -9,10 +9,11 @@ class Counter:
 
 class Singleton:
     __created__ = None
-
     def __new__(cls, *args, **kwargs):
         if cls.__created__ == None:
             cls.__created__ = super().__new__(cls, *args, **kwargs)
+            cls.__init__(cls.__created__, *args, **kwargs)
+            cls.__init__ = lambda self, *args, **kwargs: None
         return cls.__created__
 
 
@@ -21,29 +22,8 @@ class GlobalCounter(Singleton, Counter):
 
 
 gc1 = GlobalCounter()
+gc1.increment()
+print(gc1.count)
 gc2 = GlobalCounter()
-assert id(gc1) == id(gc2)  # True
-
-
-def singleton(cls):
-    cls.__created__ = None
-    cls.__default_new__ = cls.__new__
-
-    def new(cls, *args, **kwargs):
-        if cls.__created__ == None:
-            cls.__created__ = cls.__default_new__(cls, *args, **kwargs)
-        return cls.__created__
-
-    cls.__new__ = new
-
-    return cls
-
-
-@singleton
-class OtherGlobalCounter(Counter):
-    pass
-
-
-gc1 = OtherGlobalCounter()
-gc2 = OtherGlobalCounter()
+print(gc2.count)
 assert id(gc1) == id(gc2)  # True
