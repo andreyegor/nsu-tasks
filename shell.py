@@ -11,7 +11,7 @@ def write(file: Path, text: str, mode="w"):
         f.write(text)
 
 
-def parse(line: str):
+def parse(line: str, commands=commands):
     def read_command(token):
         nonlocal command
         try:
