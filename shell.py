@@ -30,7 +30,6 @@ def parse(line: str):
         return False
 
     command = None
-    out = ""
     data, options = [], {}
     write_data, write_mode = [], False
     wait_for_opt = 0
@@ -61,13 +60,15 @@ def parse(line: str):
                 case _:
                     data.append(token)
         correct_files = []
+        shell_out = ""
         for file, mode in write_data:
             f = Path(file)
-            if not Path(f.parent).is_dir() or (not f.is_file() and (mode == "a")):
-                print(f"'{file}': No such file or directory")
+            if not Path(f.parent).is_dir():
+                shell_out += f"'{file}': No such file or directory\n"
                 continue
-            write(f, out, mode)
+            write(f, "", mode)
             correct_files.append(f)
+        out = ""
         try:
             out = command(options, data)
         except Exception:
@@ -75,10 +76,7 @@ def parse(line: str):
 
         for f in correct_files:
             write(f, out, "a")
-        options, data = [], []
-        write_data, write_mode = [], False
-        command = None
-    return out if not correct_files else ""
+    return out if not write_data else shell_out
 
 
 def solution(script: TextIO, output: TextIO) -> None:
