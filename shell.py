@@ -54,7 +54,7 @@ def parse(line: str):
                     write_mode = False
                 case _ if write_data:
                     break
-                case token if token in command.__command_options__:
+                case token if token[0] == "-":
                     if err := read_option(token):
                         return err
                 case _:
