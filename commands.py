@@ -3,21 +3,21 @@ import re
 from pathlib import Path
 from queue import Queue
 
-from shell import command
+from shell import command as _command
 
 
 # ниже записаны сами команды, обязательно в формате def _name( options:list, data:list)->str
-@command
+@_command
 def echo(options, data):
     return " ".join(data) + "\n"
 
 
-@command
+@_command
 def pwd(options, data):
     return os.getcwd()
 
 
-@command
+@_command
 def cd(options, data):
     try:
         os.chdir(data[0])
@@ -26,7 +26,7 @@ def cd(options, data):
         return f"'{data[0]}': No such file or directory"
 
 
-@command
+@_command
 def mkdir(options, data):
     in_dir = Path(data[0])
     try:
@@ -38,7 +38,7 @@ def mkdir(options, data):
         return f"‘{in_dir}’: File or directory alredy exists"
 
 
-@command
+@_command
 def ls(options, data):
     try:
         return " ".join(sorted(os.listdir(data[0]) if data else os.listdir()))
@@ -46,7 +46,7 @@ def ls(options, data):
         return f"cannot access '{''.join(data)}': No such file or directory"
 
 
-@command
+@_command
 def cat(options, data):
     out = ""
     for file in data:
@@ -59,12 +59,12 @@ def cat(options, data):
     return out
 
 
-@command
+@_command
 def tac(options, data):
     return "\n".join(cat(options, data).splitlines()[::-1])
 
 
-@command(options={"-L": 1, "-P": 1})
+@_command(options={"-L": 1, "-P": 1})
 def tree(options, data):
     out = "."
     pattern = ".*"
@@ -120,7 +120,7 @@ def tree(options, data):
     return out
 
 
-@command(options={"-c": 1, "-r": 1})
+@_command(options={"-c": 1, "-r": 1})
 def grep(options, data):
     pattern = data[0]
     count = False
