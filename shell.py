@@ -1,4 +1,3 @@
-import functools
 import io
 import sys
 from pathlib import Path
@@ -10,14 +9,6 @@ import commands
 def write(file: Path, text: str, mode="w"):
     with open(file, mode, encoding="utf-8") as f:
         f.write(text)
-
-
-def command(f=None, options=None):
-    if f == None:
-        return functools.partial(command, options=options)
-    
-    f.__command_options__ = {} if options == None else options
-    return f
 
 
 def parse(line: str):
@@ -84,11 +75,10 @@ def parse(line: str):
 
         for f in correct_files:
             write(f, out, "a")
-        out = ""
         options, data = [], []
         write_data, write_mode = [], False
         command = None
-    return out
+    return out if not correct_files else ""
 
 
 def solution(script: TextIO, output: TextIO) -> None:

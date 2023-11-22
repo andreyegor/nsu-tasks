@@ -1,23 +1,30 @@
+import functools
 import os
 import re
 from pathlib import Path
 from queue import Queue
 
-from shell import command as _command
+
+def command(f=None, options=None):
+    if f == None:
+        return functools.partial(command, options=options)
+
+    f.__command_options__ = {} if options == None else options
+    return f
 
 
 # ниже записаны сами команды, обязательно в формате def _name( options:list, data:list)->str
-@_command
+@command
 def echo(options, data):
     return " ".join(data) + "\n"
 
 
-@_command
+@command
 def pwd(options, data):
     return os.getcwd()
 
 
-@_command
+@command
 def cd(options, data):
     try:
         os.chdir(data[0])
@@ -26,7 +33,7 @@ def cd(options, data):
         return f"'{data[0]}': No such file or directory"
 
 
-@_command
+@command
 def mkdir(options, data):
     in_dir = Path(data[0])
     try:
@@ -38,7 +45,7 @@ def mkdir(options, data):
         return f"‘{in_dir}’: File or directory alredy exists"
 
 
-@_command
+@command
 def ls(options, data):
     try:
         return " ".join(sorted(os.listdir(data[0]) if data else os.listdir()))
@@ -46,7 +53,7 @@ def ls(options, data):
         return f"cannot access '{''.join(data)}': No such file or directory"
 
 
-@_command
+@command
 def cat(options, data):
     out = ""
     for file in data:
@@ -59,12 +66,12 @@ def cat(options, data):
     return out
 
 
-@_command
+@command
 def tac(options, data):
     return "\n".join(cat(options, data).splitlines()[::-1])
 
 
-@_command(options={"-L": 1, "-P": 1})
+@command(options={"-L": 1, "-P": 1})
 def tree(options, data):
     out = "."
     pattern = ".*"
@@ -120,7 +127,7 @@ def tree(options, data):
     return out
 
 
-@_command(options={"-c": 1, "-r": 1})
+@command(options={"-c": 1, "-r": 1})
 def grep(options, data):
     pattern = data[0]
     count = False
