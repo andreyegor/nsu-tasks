@@ -22,8 +22,10 @@ def walk(db_name: str) -> any([Student, Teacher, AssistantStudent, None]):
 
 
 def compile(condition: str):  # [arg1] [command] [arg2]
-    left, command, *right = condition.split()
-    "".join(right)
+    left, command, right = re.findall("(\w+) (\w+) ({.*}|\S+)", condition)[0]
+    # TODO Кажеися что так делать не стоит, лучше отдать это функции чтобы корректно проверить типы
+    if right.startswith('"') and right.endswith('"'):
+        right = right[1:-1]
     commands = {
         "is": is_constructor,
         "in": in_constructor,
@@ -38,16 +40,18 @@ def do(request: str, db_name: str) -> str:
     if "where" not in request:
         command = lambda x: True
     else:
-        condition = [e.group() for e in re.finditer("(\w+ (contains|is) \w+)|\w+ in {.*}", request)]
+        condition = next(
+            re.finditer("\w+ (contains|is) \S+|\w+ in {.*}", request)
+        ).group()
         assert condition
-        command = compile(condition[0])
+        command = compile(condition)
     return filter(command, walk(db_name))
 
 
 def solution(requests: TextIO, db_name: str, output: TextIO) -> None:
     for request in requests:
         for out in do(request, db_name):
-            output.write(str(out)+'\n')
+            output.write(str(out) + "\n")
 
 
 if __name__ == "__main__":
