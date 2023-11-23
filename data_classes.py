@@ -1,5 +1,5 @@
 import json
-from typing import Self
+from typing import Any
 
 
 class Person:
@@ -11,7 +11,7 @@ class Person:
         self.id = id
 
     @classmethod
-    def create_from_json(cls, line: str) -> Self:
+    def create_from_json(cls, line: str) -> Any:
         loaded = json.loads(line)
         if type(loaded) != dict:
             raise ValueError
