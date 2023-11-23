@@ -87,7 +87,8 @@ class AssistantStudent(Student, Teacher):
     def __str__(self) -> str:
         return f"Student {self.name} from group {self.group}, {self.department}. Also teaches {self.course} in {len(self.groups)} groups and mentors {len(self.students)} students."
 
-#TODO Запихать в класс Node и объеденить его с Expression
+
+# TODO Запихать в класс Node и объеденить его с Expression
 def walk(db_name: str) -> any([Student, Teacher, AssistantStudent, None]):
     with open(db_name, "r", encoding="utf-8") as db:
         while line := db.readline():
@@ -100,19 +101,20 @@ def walk(db_name: str) -> any([Student, Teacher, AssistantStudent, None]):
             else:
                 yield None
 
+
 class Expression:
-    def __init__(self, tokens = []) -> None:
+    def __init__(self, tokens=[]) -> None:
         self.tokens = tokens
 
     def append(self, token: str) -> None:
         self.tokens.append(token)
 
-    def calculate(self, db_name) -> Callable:
+    def compile(self) -> Callable:
         if len(self.tokens) == 0:
             print("НОЛЬ ТОКЕОНВ?")
             return ""
         if len(self.tokens) == 1:
-            return self.tokens[0]
+            return lambda x: 1
         if len(self.tokens) == 3:
             left, command, right = self.tokens
             commands = {
@@ -122,10 +124,13 @@ class Expression:
             }
             assert command in commands
             return commands[command](left, right)
+        if len(self.tokens) > 3:
+            return "this is a complex function"
         if self.tokens[0:4] == ["get", "records", "where"]:
+
             def inner():
                 ...
-                
+
 
 class Node:
     def __init__(self, tokens):
@@ -133,7 +138,7 @@ class Node:
         self.nodes = []
         self.do = []
 
-    def create_graph(self, db_name):
+    def create_graph(self):
         cnt = 0
         left = -1
         for i, token in enumerate(self.tokens):
@@ -146,22 +151,16 @@ class Node:
             if cnt == 0:
                 if left != -1:
                     nd = Node(self.tokens[left + 1 : i])
-                    nd.create_graph(db_name)
-                    self.do.append(nd.calculate(db_name))
-                    self.nodes.append(nd)
+                    nd.create_graph()
+                    self.do.append(nd)
                     left = -1
                 else:
-                    if not self.do or type(self.do[-1]) != Expression:
-                        self.do.append(Expression())
-                    self.do[-1].append(token)
+                    self.do.append(token)
 
-    def calculate(self, db_name):
+    # TODO в целом экспресшн не особо нужен как класс тут внутри нужно просто втупую идти и если нода то её компилить а иначе вручную по строке
+    def compile(self):
         tokens = []
-        for e in self.do:
-            if type(e) != str:
-                tokens.append(e.calculate(db_name))
-        return Expression(tokens).calculate(db_name)
-        
-        
-        
-            
+        for i in range(len(self.do)):
+            if type(self.do[i]) != str:
+                self.do[i] = self.do[i].compile()
+        return Expression(self.do).compile()

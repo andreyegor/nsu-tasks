@@ -25,6 +25,7 @@ def compile(condition: str):  # [arg1] [command] [arg2]
     ...
 
 
+
 def tokenize(line):
     # TODO хлипенько
     tokens = [""]
@@ -59,10 +60,9 @@ def tokenize(line):
         del tokens[-1]
     return tokens
 
-
 def old_do(request: str, db_name: str) -> str:
     tokens = tokenize(request)
-    if len(request) < 3:
+    if len(request)<3:
         command = lambda x: True
     else:
         condition = next(
@@ -78,7 +78,7 @@ def do(request: str, db_name: str) -> str:
         return walk(db_name)
     graph = Node(tokenize(request)[3:])
     graph.create_graph()
-    command = graph.calculate(db_name)
+    command = graph.compile()
     return filter(command, walk(db_name))
 
 
