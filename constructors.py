@@ -6,6 +6,11 @@ def str_to_list(line: str) -> list:
     line = f"[{line[1:-1]}]"
     return literal_eval(line)
 
+def and_constructor():
+    ...
+    
+def or_constructor():
+    ...
 
 def is_constructor(left, right) -> Callable:
     def inner(obj) -> bool:

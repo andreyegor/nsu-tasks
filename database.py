@@ -22,22 +22,47 @@ def walk(db_name: str) -> any([Student, Teacher, AssistantStudent, None]):
 
 
 def compile(condition: str):  # [arg1] [command] [arg2]
-    left, command, right = re.findall("(\w+) (\w+) ({.*}|\S+)", condition)[0]
-    # TODO Кажеися что так делать не стоит, лучше отдать это функции чтобы корректно проверить типы
-    if right.startswith('"') and right.endswith('"'):
-        right = right[1:-1]
-    commands = {
-        "is": is_constructor,
-        "in": in_constructor,
-        "contains": contains_constructor,
-    }
-    assert command in commands
-    return commands[command](left, right)
+    ...
 
 
-def do(request: str, db_name: str) -> str:
-    assert request.startswith("get records")
-    if "where" not in request:
+def tokenize(line):
+    # TODO хлипенько
+    tokens = [""]
+    string = False
+    arr = False
+    for e in line:
+        if e in "}{":
+            if not (not arr and not tokens[-1]):
+                tokens.append("")
+            arr = not arr
+            tokens[-1 if e == "{" else -2] += e
+        elif arr:
+            tokens[-1]+=e
+        elif e == '"':
+            if not (not string and not tokens[-1]):
+                tokens.append("")
+            string = not string
+        elif string:
+            tokens[-1]+=e
+        elif e in "().":
+            if tokens[-1]:
+                tokens.append(e)
+            else:
+                tokens[-1] = e
+            tokens.append("")
+        elif e in " ":
+            if tokens[-1]:
+                tokens.append("")
+        else:
+            tokens[-1] += e
+    if tokens[-1] == "":
+        del tokens[-1]
+    return tokens
+
+
+def old_do(request: str, db_name: str) -> str:
+    tokens = tokenize(request)
+    if len(request) < 3:
         command = lambda x: True
     else:
         condition = next(
@@ -45,6 +70,15 @@ def do(request: str, db_name: str) -> str:
         ).group()
         assert condition
         command = compile(condition)
+    return filter(command, walk(db_name))
+
+
+def do(request: str, db_name: str) -> str:
+    if request == "get records":
+        return walk(db_name)
+    graph = Node(tokenize(request)[3:])
+    graph.create_graph()
+    command = graph.calculate(db_name)
     return filter(command, walk(db_name))
 
 
