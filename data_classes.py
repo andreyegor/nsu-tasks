@@ -90,12 +90,12 @@ class AssistantStudent(Student, Teacher):
 
 class Node:
     db_name = None
+    variables = {}
 
     def __init__(self, tokens, db_name=None):
         if db_name:
             __class__.db_name = db_name
         self.tokens = tokens
-        self.nodes = []
         self.action = []
 
     def create_graph(self):
@@ -119,7 +119,6 @@ class Node:
 
     # TODO в целом экспресшн не особо нужен как класс тут внутри нужно просто втупую идти и если нода то её компилить а иначе вручную по строке
     def compile(self):
-        self.action
         for i in range(len(self.action)):
             if type(self.action[i]) == Node:
                 self.action[i] = self.action[i].compile()
@@ -142,23 +141,43 @@ class Node:
         self.replace_bin_op(logicals)
 
         if self.action == ["get", "records"]:
-            self.action = [self.walk(lambda x: True)]
-        if len(self.action) > 3 and self.action[:3] == ["get", "records", "where"]:
-            self.action = [self.walk(self.action[3])]
-        return self.action[0]
+            out = self.walk(lambda x: True)
+        elif self.action[:2] == ["get", "records"] and len(self.action) > 3:
+            if self.action[2] == "from":
+                db_var = self.action[3]
+                if len(self.action) > 5 and self.action[4] == "where":
+                    out = self.walk(self.action[5], __class__.variables[db_var])
+                else:
+                    out = self.walk(lambda x: True, __class__.variables[db_var])
+            elif self.action[:3] == ["get", "records", "where"]:
+                out = self.walk(self.action[3])
+        else:
+            out = self.action[0]
+                
+        for i, e in enumerate(self.action):
+            if e == "as":
+                __class__.variables[self.action[i + 1]] = out
+                out = lambda: []
+        return out
 
     def replace_bin_op(self, keywords):
         i = 0
+        touched = False
         while i < len(self.action):
             if self.action[i] in keywords:
+                touched = i
                 self.action[i] = keywords[self.action[i]](
                     self.action[i - 1], self.action[i + 1]
                 )
                 del self.action[i + 1]
                 del self.action[i - 1]
             i += 1
+        return touched
 
-    def walk(self, function):
+    def walk(self, function, from_variable=None):
+        def fvinner():
+            yield from filter(function, from_variable())
+
         def inner():
             with open(__class__.db_name, "r", encoding="utf-8") as db:
                 while line := db.readline():
@@ -172,7 +191,38 @@ class Node:
                     else:
                         yield None
 
-        return inner
+        return fvinner if from_variable else inner
 
-    def gen_by_func():
-        pass
+    def tokenize(line):
+        # TODO хлипенько
+        tokens = [""]
+        string = False
+        arr = False
+        for e in line:
+            if e in "}{":
+                if not (not arr and not tokens[-1]):
+                    tokens.append("")
+                arr = not arr
+                tokens[-1 if e == "{" else -2] += e
+            elif arr:
+                tokens[-1] += e
+            elif e == '"':
+                if not (not string and not tokens[-1]):
+                    tokens.append("")
+                string = not string
+            elif string:
+                tokens[-1] += e
+            elif e in "().":
+                if tokens[-1]:
+                    tokens.append(e)
+                else:
+                    tokens[-1] = e
+                tokens.append("")
+            elif e in " ":
+                if tokens[-1]:
+                    tokens.append("")
+            else:
+                tokens[-1] += e
+        if tokens[-1] == "":
+            del tokens[-1]
+        return tokens

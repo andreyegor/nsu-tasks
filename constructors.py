@@ -5,14 +5,9 @@ from typing import Callable
 
 
 #TODO проверить аннотации типов во всей проге
-def str_to_list_constructor(line: str) -> list:
-    line = f"[{line[1:-1]}]"
-
-    def inner():
-        return iter(literal_eval(line))
-
-    return inner
-
+def as_constructor(left, right):
+    ...
+        
 def dot_func_constructor(left, right):
             is_dot = is_constructor(right, "set")
 
@@ -84,5 +79,13 @@ def str_to_iter_constructor(line: str) -> list:
 
     def inner():
         return literal_eval(line)
+
+    return inner
+
+def str_to_list_constructor(line: str) -> list:
+    line = f"[{line[1:-1]}]"
+
+    def inner():
+        return iter(literal_eval(line))
 
     return inner
