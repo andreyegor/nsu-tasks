@@ -159,8 +159,29 @@ class Node:
 
     # TODO в целом экспресшн не особо нужен как класс тут внутри нужно просто втупую идти и если нода то её компилить а иначе вручную по строке
     def compile(self):
-        tokens = []
+        self.do
         for i in range(len(self.do)):
-            if type(self.do[i]) != str:
+            if type(self.do[i]) == Node:
                 self.do[i] = self.do[i].compile()
-        return Expression(self.do).compile()
+        commands = {
+            "is": is_constructor,
+            "in": in_constructor,
+            "contains": contains_constructor,
+        }
+        #TODO вынести в функцию дублирование кода
+        i=0
+        while i<len(self.do):
+            if self.do[i] in commands:
+                self.do[i] = commands[self.do[i]](self.do[i - 1], self.do[i + 1])
+                del self.do[i+1]
+                del self.do[i-1]
+            i+=1
+        logicals = {"and": and_constructor, "or": or_constructor}
+        i=0
+        while i<len(self.do):
+            if self.do[i] in logicals:
+                self.do[i] = logicals[self.do[i]](self.do[i - 1], self.do[i + 1])
+                del self.do[i+1]
+                del self.do[i-1]
+            i+=1
+        return self.do[0]
