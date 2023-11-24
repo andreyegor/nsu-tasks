@@ -1,28 +1,9 @@
 import io
-import json
-import re
 import sys
 from typing import TextIO
 
 from constructors import *
 from data_classes import *
-
-
-def walk(db_name: str) -> any([Student, Teacher, AssistantStudent, None]):
-    with open(db_name, "r", encoding="utf-8") as db:
-        while line := db.readline():
-            for cls in (Student, Teacher, AssistantStudent):
-                try:
-                    yield cls.create_from_json(line)
-                except ValueError:
-                    continue
-                break
-            else:
-                yield None
-
-
-def compile(condition: str):  # [arg1] [command] [arg2]
-    ...
 
 
 def tokenize(line):
@@ -60,26 +41,10 @@ def tokenize(line):
     return tokens
 
 
-def old_do(request: str, db_name: str) -> str:
-    tokens = tokenize(request)
-    if len(request) < 3:
-        command = lambda x: True
-    else:
-        condition = next(
-            re.finditer("\w+ (contains|is) \S+|\w+ in {.*}", request)
-        ).group()
-        assert condition
-        command = compile(condition)
-    return filter(command, walk(db_name))
-
-
 def do(request: str, db_name: str) -> str:
     graph = Node(tokenize(request), db_name)
-    graph.create_graph()
-    command = graph.compile()
-    print(Node.variables)
-    print(command, command())
-    return command()
+    out = graph.compile()()
+    return out
 
 
 def solution(requests: TextIO, db_name: str, output: TextIO) -> None:
@@ -90,8 +55,10 @@ def solution(requests: TextIO, db_name: str, output: TextIO) -> None:
             output.write(str(out) + "\n")
 
 
-debug_input ="""get records where (department is "ММФ" or group is 19301)""".splitlines()
-debug = 1
+debug_input = (
+    """get records where (department is "ММФ" or group is 19301)""".splitlines()
+)
+debug = 0
 if __name__ == "__main__":
     if debug:
         solution(debug_input, "db.txt", sys.stdout)

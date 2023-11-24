@@ -92,13 +92,14 @@ class Node:
     db_name = None
     variables = {}
 
-    def __init__(self, tokens, db_name=None):
+    def __init__(self, tokens: [str], db_name="") -> None:
         if db_name:
             __class__.db_name = db_name
         self.tokens = tokens
         self.action = []
+        self.__create_graph()
 
-    def create_graph(self):
+    def __create_graph(self) -> None:
         cnt = 0
         left = -1
         for i, token in enumerate(self.tokens):
@@ -111,14 +112,12 @@ class Node:
             if cnt == 0:
                 if left != -1:
                     nd = Node(self.tokens[left + 1 : i])
-                    nd.create_graph()
                     self.action.append(nd)
                     left = -1
                 else:
                     self.action.append(token)
 
-    # TODO в целом экспресшн не особо нужен как класс тут внутри нужно просто втупую идти и если нода то её компилить а иначе вручную по строке
-    def compile(self):
+    def compile(self) -> Callable:
         for i in range(len(self.action)):
             if type(self.action[i]) == Node:
                 self.action[i] = self.action[i].compile()
@@ -127,9 +126,9 @@ class Node:
                 and self.action[i].startswith("{")
                 and self.action[i].endswith("}")
             ):
-                self.action[i] = str_to_list_constructor(self.action[i])
+                self.action[i] = str_to_iter_constructor(self.action[i])
 
-        dot = {".": dot_func_constructor}
+        dot = {".": dot_constructor}
         commands = {
             "is": is_constructor,
             "in": in_constructor,
@@ -153,28 +152,25 @@ class Node:
                 out = self.walk(self.action[3])
         else:
             out = self.action[0]
-                
+
         for i, e in enumerate(self.action):
             if e == "as":
                 __class__.variables[self.action[i + 1]] = out
                 out = lambda: []
         return out
 
-    def replace_bin_op(self, keywords):
+    def replace_bin_op(self, keywords) -> None:
         i = 0
-        touched = False
         while i < len(self.action):
             if self.action[i] in keywords:
-                touched = i
                 self.action[i] = keywords[self.action[i]](
                     self.action[i - 1], self.action[i + 1]
                 )
                 del self.action[i + 1]
                 del self.action[i - 1]
             i += 1
-        return touched
 
-    def walk(self, function, from_variable=None):
+    def walk(self, function, from_variable=None) -> Callable:
         def fvinner():
             yield from filter(function, from_variable())
 
@@ -192,37 +188,3 @@ class Node:
                         yield None
 
         return fvinner if from_variable else inner
-
-    def tokenize(line):
-        # TODO хлипенько
-        tokens = [""]
-        string = False
-        arr = False
-        for e in line:
-            if e in "}{":
-                if not (not arr and not tokens[-1]):
-                    tokens.append("")
-                arr = not arr
-                tokens[-1 if e == "{" else -2] += e
-            elif arr:
-                tokens[-1] += e
-            elif e == '"':
-                if not (not string and not tokens[-1]):
-                    tokens.append("")
-                string = not string
-            elif string:
-                tokens[-1] += e
-            elif e in "().":
-                if tokens[-1]:
-                    tokens.append(e)
-                else:
-                    tokens[-1] = e
-                tokens.append("")
-            elif e in " ":
-                if tokens[-1]:
-                    tokens.append("")
-            else:
-                tokens[-1] += e
-        if tokens[-1] == "":
-            del tokens[-1]
-        return tokens

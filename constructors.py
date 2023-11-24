@@ -1,25 +1,20 @@
 from ast import literal_eval
-from collections.abc import Iterable
-from itertools import tee
 from typing import Callable
 
 
-#TODO проверить аннотации типов во всей проге
-def as_constructor(left, right):
-    ...
-        
-def dot_func_constructor(left, right):
-            is_dot = is_constructor(right, "set")
+def dot_constructor(left, right) -> Callable:
+    is_dot = is_constructor(right, "set")
 
-            def inner():
-                for e in left():
-                    if is_dot(e):
-                        try:
-                            yield from getattr(e, right)
-                        except ValueError:
-                            yield getattr(e, right)
+    def inner():
+        for e in left():
+            if is_dot(e):
+                try:
+                    yield from getattr(e, right)
+                except ValueError:
+                    yield getattr(e, right)
 
-            return inner
+    return inner
+
 
 def and_constructor(left: Callable, right: Callable) -> Callable:
     return lambda obj: left(obj) and right(obj)
@@ -41,7 +36,7 @@ def is_constructor(left, right) -> Callable:
 
 def in_constructor(left, right) -> Callable:
     def inner(obj) -> bool:
-        #TODO заглушка, в итоге райт должен быть только коллабл
+        # TODO заглушка, в итоге райт должен быть только коллабл
         itr = right()
         try:
             return getattr(obj, left) in itr
@@ -61,28 +56,7 @@ def contains_constructor(left, right) -> Callable:
     return inner
 
 
-# TODO мне не нравится, переделать
-def dot_constructor(left, right):
-
-    def inner():
-        for e in left:
-            try:
-                yield from getattr(e, right)()
-            except ValueError:
-                yield getattr(e, right)()
-
-    return inner
-
-
-def str_to_iter_constructor(line: str) -> list:
-    line = f"[{line[1:-1]}]"
-
-    def inner():
-        return literal_eval(line)
-
-    return inner
-
-def str_to_list_constructor(line: str) -> list:
+def str_to_iter_constructor(line: str) -> Callable:
     line = f"[{line[1:-1]}]"
 
     def inner():
