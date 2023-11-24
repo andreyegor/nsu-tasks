@@ -1,4 +1,6 @@
 from ast import literal_eval
+from collections.abc import Iterable
+from itertools import tee
 from typing import Callable
 
 
@@ -27,8 +29,13 @@ def is_constructor(left, right) -> Callable:
 
 def in_constructor(left, right) -> Callable:
     def inner(obj) -> bool:
+        #TODO заглушка, в итоге райт должен быть только коллабл
         try:
-            return str(getattr(obj, left)) in right
+            itr = right()
+        except TypeError:
+            itr = right
+        try:
+            return getattr(obj, left) in itr
         except AttributeError:
             return False
 
@@ -41,5 +48,27 @@ def contains_constructor(left, right) -> Callable:
             return right in str(getattr(obj, left))
         except AttributeError:
             return False
+
+    return inner
+
+
+# TODO мне не нравится, переделать
+def dot_constructor(left, right):
+
+    def inner():
+        for e in left:
+            try:
+                yield from getattr(e, right)()
+            except ValueError:
+                yield getattr(e, right)()
+
+    return inner
+
+
+def str_to_iter_constructor(line: str) -> list:
+    line = f"[{line[1:-1]}]"
+
+    def inner():
+        return literal_eval(line)
 
     return inner

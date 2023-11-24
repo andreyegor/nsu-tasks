@@ -77,7 +77,7 @@ def do(request: str, db_name: str) -> str:
     graph = Node(tokenize(request), db_name)
     graph.create_graph()
     command = graph.compile()
-    return command
+    return command()
 
 
 def solution(requests: TextIO, db_name: str, output: TextIO) -> None:

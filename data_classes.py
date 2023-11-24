@@ -88,9 +88,6 @@ class AssistantStudent(Student, Teacher):
         return f"Student {self.name} from group {self.group}, {self.department}. Also teaches {self.course} in {len(self.groups)} groups and mentors {len(self.students)} students."
 
 
-# TODO Запихать в класс Node и объеденить его с Expression
-
-
 class Node:
     db_name = None
 
@@ -132,7 +129,19 @@ class Node:
                 and self.action[i].endswith("{}")
             ):
                 self.action[i] = iter(self.str_to_list(self.action[i]))
-        dot = {".": lambda left, right: self.walk(left, is_constructor(right, "set"))}
+                
+        def dot_func_constructor(left, right):
+            is_dot = is_constructor(right, "set")
+            def inner():
+                for e in left():
+                    if is_dot(e):
+                        try:
+                            yield from getattr(e, right)
+                        except ValueError:
+                            yield getattr(e, right)
+            return inner
+
+        dot = {".": dot_func_constructor}
         commands = {
             "is": is_constructor,
             "in": in_constructor,
@@ -161,17 +170,19 @@ class Node:
             i += 1
 
     def walk(self, function):
-        with open(__class__.db_name, "r", encoding="utf-8") as db:
-            while line := db.readline():
-                for cls in (Student, Teacher, AssistantStudent):
-                    try:
-                        if function(cls.create_from_json(line)):
-                            yield cls.create_from_json(line)
-                    except ValueError:
-                        continue
-                    break
-                else:
-                    yield None
+        def inner():
+            with open(__class__.db_name, "r", encoding="utf-8") as db:
+                while line := db.readline():
+                    for cls in (Student, Teacher, AssistantStudent):
+                        try:
+                            if function(cls.create_from_json(line)):
+                                yield cls.create_from_json(line)
+                        except ValueError:
+                            continue
+                        break
+                    else:
+                        yield None
+        return inner
 
     def gen_by_func():
         pass
