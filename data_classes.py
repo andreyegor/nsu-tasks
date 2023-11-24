@@ -89,54 +89,17 @@ class AssistantStudent(Student, Teacher):
 
 
 # TODO Запихать в класс Node и объеденить его с Expression
-def walk(db_name: str) -> any([Student, Teacher, AssistantStudent, None]):
-    with open(db_name, "r", encoding="utf-8") as db:
-        while line := db.readline():
-            for cls in (Student, Teacher, AssistantStudent):
-                try:
-                    yield cls.create_from_json(line)
-                except ValueError:
-                    continue
-                break
-            else:
-                yield None
-
-
-class Expression:
-    def __init__(self, tokens=[]) -> None:
-        self.tokens = tokens
-
-    def append(self, token: str) -> None:
-        self.tokens.append(token)
-
-    def compile(self) -> Callable:
-        if len(self.tokens) == 0:
-            print("НОЛЬ ТОКЕОНВ?")
-            return ""
-        if len(self.tokens) == 1:
-            return lambda x: 1
-        if len(self.tokens) == 3:
-            left, command, right = self.tokens
-            commands = {
-                "is": is_constructor,
-                "in": in_constructor,
-                "contains": contains_constructor,
-            }
-            assert command in commands
-            return commands[command](left, right)
-        if len(self.tokens) > 3:
-            return "this is a complex function"
-        if self.tokens[0:4] == ["get", "records", "where"]:
-
-            def inner():
-                ...
 
 
 class Node:
-    def __init__(self, tokens):
+    db_name = None
+
+    def __init__(self, tokens, db_name=None):
+        if db_name:
+            __class__.db_name = db_name
         self.tokens = tokens
         self.nodes = []
-        self.do = []
+        self.action = []
 
     def create_graph(self):
         cnt = 0
@@ -152,36 +115,52 @@ class Node:
                 if left != -1:
                     nd = Node(self.tokens[left + 1 : i])
                     nd.create_graph()
-                    self.do.append(nd)
+                    self.action.append(nd)
                     left = -1
                 else:
-                    self.do.append(token)
+                    self.action.append(token)
 
     # TODO в целом экспресшн не особо нужен как класс тут внутри нужно просто втупую идти и если нода то её компилить а иначе вручную по строке
     def compile(self):
-        self.do
-        for i in range(len(self.do)):
-            if type(self.do[i]) == Node:
-                self.do[i] = self.do[i].compile()
+        self.action
+        for i in range(len(self.action)):
+            if type(self.action[i]) == Node:
+                self.action[i] = self.action[i].compile()
         commands = {
             "is": is_constructor,
             "in": in_constructor,
             "contains": contains_constructor,
         }
-        #TODO вынести в функцию дублирование кода
-        i=0
-        while i<len(self.do):
-            if self.do[i] in commands:
-                self.do[i] = commands[self.do[i]](self.do[i - 1], self.do[i + 1])
-                del self.do[i+1]
-                del self.do[i-1]
-            i+=1
         logicals = {"and": and_constructor, "or": or_constructor}
-        i=0
-        while i<len(self.do):
-            if self.do[i] in logicals:
-                self.do[i] = logicals[self.do[i]](self.do[i - 1], self.do[i + 1])
-                del self.do[i+1]
-                del self.do[i-1]
-            i+=1
-        return self.do[0]
+        self.replace_bin_op(commands)
+        self.replace_bin_op(logicals)
+
+        if self.action == ["get", "records"]:
+            self.action = [self.walk(lambda x: True)]
+        if len(self.action) > 3 and self.action[:3] == ["get", "records", "where"]:
+            self.action = [self.walk(self.action[3])]
+        return self.action[0]
+
+    def replace_bin_op(self, keywords):
+        i = 0
+        while i < len(self.action):
+            if self.action[i] in keywords:
+                self.action[i] = keywords[self.action[i]](
+                    self.action[i - 1], self.action[i + 1]
+                )
+                del self.action[i + 1]
+                del self.action[i - 1]
+            i += 1
+
+    def walk(self, function):
+        with open(__class__.db_name, "r", encoding="utf-8") as db:
+            while line := db.readline():
+                for cls in (Student, Teacher, AssistantStudent):
+                    try:
+                        if function(cls.create_from_json(line)):
+                            yield cls.create_from_json(line)
+                    except ValueError:
+                        continue
+                    break
+                else:
+                    yield None

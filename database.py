@@ -74,12 +74,10 @@ def old_do(request: str, db_name: str) -> str:
 
 
 def do(request: str, db_name: str) -> str:
-    if request == "get records":
-        return walk(db_name)
-    graph = Node(tokenize(request)[3:])
+    graph = Node(tokenize(request), db_name)
     graph.create_graph()
     command = graph.compile()
-    return filter(command, walk(db_name))
+    return command
 
 
 def solution(requests: TextIO, db_name: str, output: TextIO) -> None:
