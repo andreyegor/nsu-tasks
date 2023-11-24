@@ -125,21 +125,10 @@ class Node:
                 self.action[i] = self.action[i].compile()
             if (
                 type(self.action[i]) == str
-                and self.action[i].startswith("{}")
-                and self.action[i].endswith("{}")
+                and self.action[i].startswith("{")
+                and self.action[i].endswith("}")
             ):
-                self.action[i] = iter(self.str_to_list(self.action[i]))
-                
-        def dot_func_constructor(left, right):
-            is_dot = is_constructor(right, "set")
-            def inner():
-                for e in left():
-                    if is_dot(e):
-                        try:
-                            yield from getattr(e, right)
-                        except ValueError:
-                            yield getattr(e, right)
-            return inner
+                self.action[i] = str_to_list_constructor(self.action[i])
 
         dot = {".": dot_func_constructor}
         commands = {
@@ -182,11 +171,8 @@ class Node:
                         break
                     else:
                         yield None
+
         return inner
 
     def gen_by_func():
         pass
-
-    def str_to_list(line: str) -> list:
-        line = f"[{line[1:-1]}]"
-        return literal_eval(line)
