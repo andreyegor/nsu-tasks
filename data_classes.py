@@ -126,12 +126,20 @@ class Node:
         for i in range(len(self.action)):
             if type(self.action[i]) == Node:
                 self.action[i] = self.action[i].compile()
+            if (
+                type(self.action[i]) == str
+                and self.action[i].startswith("{}")
+                and self.action[i].endswith("{}")
+            ):
+                self.action[i] = iter(self.str_to_list(self.action[i]))
+        dot = {".": lambda left, right: self.walk(left, is_constructor(right, "set"))}
         commands = {
             "is": is_constructor,
             "in": in_constructor,
             "contains": contains_constructor,
         }
         logicals = {"and": and_constructor, "or": or_constructor}
+        self.replace_bin_op(dot)
         self.replace_bin_op(commands)
         self.replace_bin_op(logicals)
 
@@ -164,3 +172,10 @@ class Node:
                     break
                 else:
                     yield None
+
+    def gen_by_func():
+        pass
+
+    def str_to_list(line: str) -> list:
+        line = f"[{line[1:-1]}]"
+        return literal_eval(line)

@@ -28,7 +28,7 @@ def is_constructor(left, right) -> Callable:
 def in_constructor(left, right) -> Callable:
     def inner(obj) -> bool:
         try:
-            return str(getattr(obj, left)) in str_to_list(right)
+            return str(getattr(obj, left)) in right
         except AttributeError:
             return False
 
