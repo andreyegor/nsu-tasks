@@ -17,7 +17,7 @@ def parse(line: str, commands=commands):
         try:
             command = getattr(commands, token)
             command.__command_options__
-            return False
+            return None
         except AttributeError:
             return f"{token}: command not found"
 
@@ -27,7 +27,7 @@ def parse(line: str, commands=commands):
             return f"invalid option '{token}'"
         wait_for_opt = command.__command_options__[token]
         options[token] = []
-        return False
+        return None
 
     command = None
     data, options = [], {}
