@@ -16,7 +16,7 @@ def parse(line: str, commands=commands):
         nonlocal command
         try:
             command = getattr(commands, token)
-            command.__command_options__
+            command.__command_options__  # В случае если функция существует, но не является командой выбросит AttributeError, который поймается ниже
             return None
         except AttributeError:
             return f"{token}: command not found"
