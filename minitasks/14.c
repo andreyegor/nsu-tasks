@@ -33,10 +33,10 @@ PyObject *foreign_matrix_power(PyObject *self, PyObject *args) {
             for (long j = 0; j < matrix_size; j++) {
                 double ij = 0;
                 for (long q = 0; q < matrix_size; q++) {
-                    printf("%f*%f=%f ", other_c_matrix[i][q], c_matrix[q][j], other_c_matrix[i][q] * c_matrix[q][j]);
+                    // printf("%f*%f=%f ", other_c_matrix[i][q], c_matrix[q][j], other_c_matrix[i][q] * c_matrix[q][j]);
                     ij += other_c_matrix[i][q] * c_matrix[q][j];
                 }
-                printf("\n");
+                // printf("\n");
                 third_c_matrix[i][j] = ij;
             }
         }
