@@ -4,18 +4,13 @@
 
 PyObject *foreign_matrix_power(PyObject *self, PyObject *args) {
     PyObject *in_matrix;
-    if (!PyArg_ParseTuple(args, "O", &in_matrix)) {
+    PyObject *in_degree;
+    if (!PyArg_UnpackTuple(args, "тут вроде что-то для эксепшнсов должно быть", 1, 2, &in_matrix, &in_degree)) {
         PyErr_SetString(PyExc_Exception, "1");
         return NULL;
     }
-
-    int matrix_size = PyObject_Length(in_matrix);
-
-    int degree = 2;
-    //    if (!PyArg_ParseTuple(args, "n", &degree)) {
-    //        PyErr_SetString(PyExc_Exception, "2");
-    //        return NULL;
-    //    }
+    long degree = PyLong_AsLong(in_degree);
+    long matrix_size = PyObject_Length(in_matrix);
 
     PyObject *deepCopy = PyObject_GetAttrString(PyImport_ImportModule("copy"), "deepcopy");
     if (!deepCopy) {
@@ -23,27 +18,41 @@ PyObject *foreign_matrix_power(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    PyObject *out_matrix = PyObject_CallFunctionObjArgs(deepCopy, in_matrix, NULL);
-
     double c_matrix[matrix_size][matrix_size];
+    double other_c_matrix[matrix_size][matrix_size];
+    double third_c_matrix[matrix_size][matrix_size];
     for (int i = 0; i < matrix_size; i++) {
         for (int j = 0; j < matrix_size; j++) {
             c_matrix[i][j] = PyFloat_AsDouble(PyList_GetItem(PyList_GetItem(in_matrix, i), j));
+            other_c_matrix[i][j] = c_matrix[i][j];
+            third_c_matrix[i][j] = c_matrix[i][j];
         }
     }
-
-    for (int n = 1; n < degree; n++) {
-        for (int i = 0; i < matrix_size; i++) {
-            for (int j = 0; j < matrix_size; j++) {
+    for (long n = 1; n < degree; n++) {
+        for (long i = 0; i < matrix_size; i++) {
+            for (long j = 0; j < matrix_size; j++) {
                 double ij = 0;
-                for (int q = 0; q < matrix_size; q++) {
-                    printf("%d %d %d\n", i, j, q);
-                    ij += c_matrix[i][q] * c_matrix[q][j];
+                for (long q = 0; q < matrix_size; q++) {
+                    printf("%f*%f=%f ", other_c_matrix[i][q], c_matrix[q][j], other_c_matrix[i][q] * c_matrix[q][j]);
+                    ij += other_c_matrix[i][q] * c_matrix[q][j];
                 }
-                PyList_SetItem(PyList_GetItem(out_matrix, i), j, PyFloat_FromDouble(ij));
+                printf("\n");
+                third_c_matrix[i][j] = ij;
             }
         }
+        for (int i = 0; i < matrix_size; i++)
+            for (int j = 0; j < matrix_size; j++)
+                other_c_matrix[i][j] = third_c_matrix[i][j];
     }
+    PyObject *out_matrix = PyList_New(matrix_size);
+    for (long i = 0; i < matrix_size; i++) {
+        PyObject *line = PyList_New(matrix_size);
+        for (long j = 0; j < matrix_size; j++) {
+            PyList_SetItem(line, j, PyFloat_FromDouble(other_c_matrix[i][j]));
+        }
+        PyList_SetItem(out_matrix, i, line);
+    }
+
     return out_matrix;
 }
 
