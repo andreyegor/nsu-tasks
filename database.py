@@ -3,39 +3,42 @@ import sys
 from typing import TextIO
 
 from constructors import *
-from data_classes import *
+from db_classes import *
 
 
 def tokenize(line):
-    # TODO хлипенько
     tokens = [""]
     string = False
     arr = False
-    for e in line:
-        if e in "}{":
-            if not (not arr and not tokens[-1]):
+    for char in line:
+        match char:
+            case "{":
+                arr = True
+                tokens[-1] += char
+            case "}":
+                arr = False
+                tokens[-1] += char
                 tokens.append("")
-            arr = not arr
-            tokens[-1 if e == "{" else -2] += e
-        elif arr:
-            tokens[-1] += e
-        elif e == '"':
-            if not (not string and not tokens[-1]):
+            case _ if arr:
+                tokens[-1] += char
+            case '"' if not string:
+                string = True
+            case '"' if string:
+                string = False
                 tokens.append("")
-            string = not string
-        elif string:
-            tokens[-1] += e
-        elif e in "().":
-            if tokens[-1]:
-                tokens.append(e)
-            else:
-                tokens[-1] = e
-            tokens.append("")
-        elif e in " ":
-            if tokens[-1]:
+            case _ if string:
+                tokens[-1] += char
+            case char if char in "().":
+                if tokens[-1]:
+                    tokens.append(char)
+                else:
+                    tokens[-1] = char
                 tokens.append("")
-        else:
-            tokens[-1] += e
+            case " ":
+                if tokens[-1]:
+                    tokens.append("")
+            case _:
+                tokens[-1] += char
     if tokens[-1] == "":
         del tokens[-1]
     return tokens
