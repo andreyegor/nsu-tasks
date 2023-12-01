@@ -2,8 +2,6 @@ import json
 from dataclasses import dataclass, fields
 from typing import Any
 
-from constructors import *
-
 
 @dataclass
 class Person:

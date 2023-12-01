@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Callable
 
-from constructors import *
+import constructors
 
 
 class Database:
@@ -92,20 +92,22 @@ class Node:
                 and self.action[i].startswith("{")
                 and self.action[i].endswith("}")
             ):
-                self.action[i] = str_to_iter_constructor(self.action[i])
+                self.action[i] = constructors.str_to_iter_constructor(self.action[i])
 
-        dot = {".": dot_constructor}
+        dot = {".": constructors.dot_constructor}
         commands = {
-            "is": is_constructor,
-            "in": in_constructor,
-            "contains": contains_constructor,
+            "is": constructors.is_constructor,
+            "in": constructors.in_constructor,
+            "contains": constructors.contains_constructor,
         }
-        logicals = {"and": and_constructor, "or": or_constructor}
+        logicals = {
+            "and": constructors.and_constructor,
+            "or": constructors.or_constructor,
+        }
         self.replace_bin_op(dot)
         self.replace_bin_op(commands)
         self.replace_bin_op(logicals)
 
-        # TODO жесть, переписать
         if self.action == ["get", "records"] or self.action[:3] == [
             "get",
             "records",
