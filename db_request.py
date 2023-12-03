@@ -10,8 +10,10 @@ class Database:
 
     def request(self, request) -> str:
         graph = Node(self.__tokenize(request), self.env)
-        out = graph.compile()()
-        return out
+        try:
+            return graph.compile()()
+        except Exception:
+            return ["Запрос некорректен"]
 
     def __tokenize(self, line):
         tokens = [""]
