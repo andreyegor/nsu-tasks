@@ -2,12 +2,14 @@ import io
 import sys
 from typing import TextIO
 
-from db_classes import *
+import db_classes
 from db_request import Database
 
 
 def solution(requests: TextIO, db_name: str, output: TextIO) -> None:
-    db = Database(db_name, [Student, Teacher, AssistantStudent])
+    db = Database(
+        db_name, [db_classes.Student, db_classes.Teacher, db_classes.AssistantStudent]
+    )
     for request in requests:
         if request.endswith("\n"):
             request = request[:-1]
