@@ -5,8 +5,7 @@
 PyObject *foreign_matrix_power(PyObject *self, PyObject *args) {
     PyObject *in_matrix;
     PyObject *in_degree;
-    if (!PyArg_UnpackTuple(args, "тут вроде что-то для эксепшнсов должно быть", 1, 2, &in_matrix, &in_degree)) {
-        PyErr_SetString(PyExc_Exception, "1");
+    if (!PyArg_UnpackTuple(args, "тут вроде что-то для эксепшнсов должно быть", 2, 2, &in_matrix, &in_degree)) {
         return NULL;
     }
     long degree = PyLong_AsLong(in_degree);

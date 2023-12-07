@@ -1,10 +1,6 @@
-def cycle(in_itr):
-    itr = in_itr
+def cycle(itr):
     while True:
-        try:
-            yield from itr
-        except StopIteration:
-            itr = in_itr
+        yield from itr
     
 ccl = cycle(range(5))
 for i in range(10):
