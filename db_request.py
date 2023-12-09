@@ -95,6 +95,31 @@ class Node:
             ):
                 self.action[i] = constructors.str_to_iter_constructor(self.action[i])
 
+        self.replace_all_bin_op()
+        
+        
+        i = 0
+        condition = lambda x: True
+        db_var = None
+        out = None
+        if len(self.action)>1 and self.action[:2] == ["get", "records"]:
+            i=2
+        else:
+            out =  self.action[0]
+        if len(self.action) > i and self.action[i] == "from":
+            db_var = self.env.variables[self.action[i+1]]
+            i+=2
+        if len(self.action) > i and self.action[i] == "where":
+            condition = self.action[i+1]
+            i+=2
+        if not out:
+            out = self.walk(condition, db_var)
+        if len(self.action) > i and self.action[i] == "as":
+            self.env.variables[self.action[i+1]] = out
+            out = lambda: []
+        return out
+
+    def replace_all_bin_op(self):
         dot = {".": constructors.dot_constructor}
         commands = {
             "is": constructors.is_constructor,
@@ -108,30 +133,6 @@ class Node:
         self.replace_bin_op(dot)
         self.replace_bin_op(commands)
         self.replace_bin_op(logicals)
-
-        if self.action == ["get", "records"] or self.action[:3] == [
-            "get",
-            "records",
-            "as",
-        ]:
-            out = self.walk(lambda x: True)
-        elif self.action[:2] == ["get", "records"] and len(self.action) > 3:
-            if self.action[2] == "from":
-                db_var = self.action[3]
-                if len(self.action) > 5 and self.action[4] == "where":
-                    out = self.walk(self.action[5], self.env.variables[db_var])
-                else:
-                    out = self.walk(lambda x: True, self.env.variables[db_var])
-            elif self.action[:3] == ["get", "records", "where"]:
-                out = self.walk(self.action[3])
-        else:
-            out = self.action[0]
-
-        for i, e in enumerate(self.action):
-            if e == "as":
-                self.env.variables[self.action[i + 1]] = out
-                out = lambda: []
-        return out
 
     def replace_bin_op(self, keywords) -> None:
         i = 0
