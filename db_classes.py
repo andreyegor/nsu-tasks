@@ -13,11 +13,11 @@ class Person:
     def create_from_json(cls, line: str) -> Any:
         loaded = json.loads(line)
         if type(loaded) != dict:
-            raise ValueError
+            raise ValueError("Строка не является обьектом JSON")
         kwargs = {}
         for field, value in loaded.items():
-            if field not in (field.name for field in fields(cls)):
-                raise ValueError("Нет такого поля")
+            if (field, type(value)) not in ((field.name, field.type) for field in fields(cls)):
+                raise ValueError(f"Не существует поля {field} или оно не хранит этот тип данных")
             kwargs[field] = value
         return cls(**kwargs)
 
@@ -30,7 +30,7 @@ class Person:
         )
 
     def __hash__(self) -> int:
-        hash(self.id)
+        return hash(self.id)
 
     def __eq__(self, __value: object) -> bool:
         return self.id == __value.id
@@ -38,7 +38,7 @@ class Person:
 
 @dataclass
 class Student(Person):
-    department: int
+    department: str
     group: int
     student_id: int
 
@@ -48,7 +48,7 @@ class Student(Person):
 
 @dataclass
 class Teacher(Person):
-    course: int
+    course: str
     groups: list
     students: list
 
