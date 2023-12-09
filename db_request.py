@@ -105,15 +105,14 @@ class Node:
         if len(self.action)>1 and self.action[:2] == ["get", "records"]:
             i=2
         else:
-            out =  self.action[0]
+            return self.action[0]
         if len(self.action) > i and self.action[i] == "from":
             db_var = self.env.variables[self.action[i+1]]
             i+=2
         if len(self.action) > i and self.action[i] == "where":
             condition = self.action[i+1]
             i+=2
-        if not out:
-            out = self.walk(condition, db_var)
+        out = self.walk(condition, db_var)
         if len(self.action) > i and self.action[i] == "as":
             self.env.variables[self.action[i+1]] = out
             out = lambda: []
