@@ -32,8 +32,8 @@ class Person:
     def __hash__(self) -> int:
         return hash(self.id)
 
-    def __eq__(self, __value: object) -> bool:
-        return self.id == __value.id
+    def __eq__(self, value: object) -> bool:
+        return type(self) == type(value) and self.id == value.id
 
 
 @dataclass
@@ -59,4 +59,4 @@ class Teacher(Person):
 @dataclass
 class AssistantStudent(Student, Teacher):
     def __str__(self) -> str:
-        return f"Student {self.name} from group {self.group}, {self.department}. Also teaches {self.course} in {len(self.groups)} groups and mentors {len(self.students)} students."
+        return f"{super().__str__()}. Also teaches {self.course} in {len(self.groups)} groups and mentors {len(self.students)} students."
