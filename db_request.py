@@ -5,7 +5,9 @@ import constructors
 
 
 class Database:
-    def __init__(self, db_name, dataclasses, variables={}) -> None:
+    def __init__(self, db_name, dataclasses, variables=None) -> None:
+        if variables == None:
+            variables = dict()
         self.env = Enviroment(db_name, dataclasses, variables)
 
     def request(self, request) -> str:
