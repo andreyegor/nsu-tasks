@@ -96,25 +96,24 @@ class Node:
                 self.action[i] = constructors.str_to_iter_constructor(self.action[i])
 
         self.replace_all_bin_op()
-        
-        
+
         i = 0
         condition = lambda x: True
         db_var = None
         out = None
-        if len(self.action)>1 and self.action[:2] == ["get", "records"]:
-            i=2
+        if len(self.action) > 1 and self.action[:2] == ["get", "records"]:
+            i = 2
         else:
             return self.action[0]
         if len(self.action) > i and self.action[i] == "from":
-            db_var = self.env.variables[self.action[i+1]]
-            i+=2
+            db_var = self.env.variables[self.action[i + 1]]
+            i += 2
         if len(self.action) > i and self.action[i] == "where":
-            condition = self.action[i+1]
-            i+=2
+            condition = self.action[i + 1]
+            i += 2
         out = self.walk(condition, db_var)
         if len(self.action) > i and self.action[i] == "as":
-            self.env.variables[self.action[i+1]] = out
+            self.env.variables[self.action[i + 1]] = out
             out = lambda: []
         return out
 
@@ -129,9 +128,13 @@ class Node:
             "and": constructors.and_constructor,
             "or": constructors.or_constructor,
         }
+        # содержит токены и, возможно, функции
         self.replace_bin_op(dot)
+        # содержит токены и, возможно, функции получения генератора полей из обьектов
         self.replace_bin_op(commands)
+        # содержит функции работы с командами и, возможно, токены логических операций и "мусорные" токены
         self.replace_bin_op(logicals)
+        # содержит итоговую функцию и, возможно "мусорные" токены
 
     def replace_bin_op(self, keywords) -> None:
         i = 0
