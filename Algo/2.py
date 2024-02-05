@@ -1,9 +1,9 @@
 def plus(n1, n2):
-    return str(int(n1) + int(n2))  # TODO
+    return str(int(n1) + int(n2))
 
 
 def minus(n1, n2):
-    return str(int(n1) - int(n2))  # TODO
+    return str(int(n1) - int(n2))
 
 
 def multiply(n1, n2):
@@ -11,7 +11,7 @@ def multiply(n1, n2):
     n2 = int(n2)
     for i in range(int(n1)):
         out += n2
-    return str(out)  # TODO
+    return str(out)
 
 
 def karatsuba(n1: str, n2: str) -> str:
