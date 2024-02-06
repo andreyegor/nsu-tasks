@@ -1,7 +1,0 @@
-/things
-/.vscode
-/.idea
-/.pytest_cache
-/minitasks/build
-/minitasks/foreign.egg-info
-*.so

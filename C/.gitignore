@@ -1,6 +1,0 @@
-.vscode/
-test/
-cmake-build-debug/
-.idea/
-CMakeLists.txt
-*.exe
