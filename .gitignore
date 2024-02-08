@@ -1,5 +1,7 @@
 /.vscode
 /.idea
+*tmp*
+
 
 /.pytest_cache
 /Python/build
