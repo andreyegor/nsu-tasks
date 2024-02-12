@@ -1,13 +1,13 @@
-/.vscode
-/.idea
+.vscode
+.idea
 *tmp*
 
 
-/.pytest_cache
+.pytest_cache
 /Python/build
 /Python/foreign.egg-info
 *.so
 
-/cmake-build-debug
+cmake-build-debug
 CMakeLists.txt
 *.exe
