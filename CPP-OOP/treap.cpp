@@ -14,6 +14,19 @@ class TreapNode {
     TreapNode *right = nullptr;
     TreapVal value;
 
+
+    bool removeChild(TreapNode *node) {
+        if (left == node) {
+            left = nullptr;
+            return true;
+        }
+        if (right == node) {
+            right = nullptr;
+            return true;
+        }
+        return false;
+    }
+
     void fromSortedArray(const std::vector<TreapVal> &values, size_t id, TreapNode *previous) {
         if (id == values.size()) {
             return;
@@ -21,18 +34,18 @@ class TreapNode {
 
         if (value.priority < values[id].priority && value.key < values[id].key) {
             right = new TreapNode(values[id], nullptr); // TODO setright
-            right->setParent(this);
+            right->parent = this;
             if (previous) {
-                previous->getParent()->removeChild(previous);
-                previous->setParent(right);
-                right->setLeft(previous);
+                previous->parent->removeChild(previous);
+                previous->parent = right;
+                right->left = previous;
             }
             right->fromSortedArray(values, id + 1, nullptr);
         } else if (parent != nullptr) {
             parent->fromSortedArray(values, id, this);
         } else {
             parent = new TreapNode(values[id]);
-            parent->setLeft(this);
+            parent->left = this;
             parent->fromSortedArray(values, id + 1, nullptr);
         }
 
@@ -57,40 +70,12 @@ public:
         delete right;
     }
 
-    void setLeft(TreapNode *node) {
-        left = node;
-    }
-
-    void setRight(TreapNode *node) {
-        right = node;
-    }
-
-    void setParent(TreapNode *node) {
-        parent = node;
-    }
-
-    TreapNode *getParent() {
-        return parent;
-    }
-
-    TreapNode *getRoot() {
+    TreapNode *getRoot() {//TODO vozmozno stoit ubrat v private
         TreapNode *now = this;
-        while (now->getParent()) {
-            now = now->getParent();
+        while (now->parent) {
+            now = now->parent;
         }
         return now;
-    }
-
-    bool removeChild(TreapNode *node) {
-        if (left == node) {
-            left = nullptr;
-            return true;
-        }
-        if (right == node) {
-            right = nullptr;
-            return true;
-        }
-        return false;
     }
 
 };
