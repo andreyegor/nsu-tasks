@@ -4,4 +4,4 @@
 * Мини-задача 5 [H-Index](https://leetcode.com/problems/h-index/submissions/1170320504/)
 * Мини-задача 6 [Wiggle Sort II](https://leetcode.com/problems/wiggle-sort-ii/submissions/1170581301/)
 * Мини-задача 7 ([2 балла](https://leetcode.com/problems/sort-an-array/submissions/1175117954)) [Sort an Array](poka_netu.heh)
-* Мини-задача 8 ([O(n*log(n))](https://leetcode.com/problems/global-and-local-inversions/submissions/1175344619)) [Global and Local Inversions](https://leetcode.com/problems/global-and-local-inversions/submissions/1175343094/)
+* Мини-задача 8 ([O(n*log(n))](https://leetcode.com/problems/global-and-local-inversions/submissions/1175344619)) [Global and Local Inversions](https://leetcode.com/problems/global-and-local-inversions/submissions/1175667387)
