@@ -21,7 +21,7 @@ class Matrix:
         if type(key) == tuple:
             k = 0
             start1 = key[0].start
-            stop1 = min(key[0].stop if key[0].stop != None else start1 + 1, len(self.data))
+            stop1 = key[0].stop if key[0].stop != None else start1 + 1
             step1 = key[0].step if key[0].step != None else 1
 
             start2 = key[1].start
@@ -30,7 +30,7 @@ class Matrix:
             )
             step2 = key[1].step if key[1].step != None else 1
             for i in range(start1, stop1, step1):
-                self.data[i][start2:stop2:step2] = value[k][:(stop2-start2)//step2]
+                self.data[i][start2:stop2:step2] = value[k][: (stop2 - start2) // step2]
                 k += 1
         else:
             self.data.__setitem__(key, value)
@@ -64,7 +64,7 @@ class Matrix:
         ln = max(len(self.data), len(self.data[0]), len(other))
         if ln & (ln - 1) != 0 or not (
             len(self.data) == len(self.data[0]) == len(other)
-        ):  # TODO не всегда дополнит
+        ):
             i = 0
             while ln:
                 ln >>= 1
@@ -88,15 +88,15 @@ class Matrix:
             return m1 * m2
         a, b, c, d = (
             m1[0:half_ln, 0:half_ln],
-            m1[half_ln:ln, 0:half_ln],
             m1[0:half_ln, half_ln:ln],
+            m1[half_ln:ln, 0:half_ln],
             m1[half_ln:ln, half_ln:ln],
         )
 
         e, f, g, h = (
             m2[0:half_ln, 0:half_ln],
-            m2[half_ln:ln, 0:half_ln],
             m2[0:half_ln, half_ln:ln],
+            m2[half_ln:ln, 0:half_ln],
             m2[half_ln:ln, half_ln:ln],
         )
 
@@ -113,15 +113,15 @@ class Matrix:
         q3 = p3 + p4
         q4 = p1 + p5 - p3 - p7
 
-        out = Matrix([[0] * len(other[0]) for i in range(len(self.data))])
+        out = Matrix([[0] * len(self.data) for i in range(len(other[0]))])
         out[0:half_ln, 0:half_ln] = q1
-        out[half_ln : ln, 0:half_ln] = q2
-        out[0:half_ln, half_ln : ln] = q3
-        out[half_ln : ln, half_ln : ln] = q4
+        out[0:half_ln, half_ln : len(other[0])] = q2
+        out[half_ln : len(self.data), 0:half_ln] = q3
+        out[half_ln : len(self.data), half_ln : len(other[0])] = q4
         return out
 
 
 m1 = Matrix([[1, 2, 3], [4, 5, 6]])
 m2 = Matrix([[1, 2], [3, 4], [5, 6]])
 print(len(m1))
-print(m1 @ m1, m1 * m1)
+print(m2 @ m1, m2 * m1)
