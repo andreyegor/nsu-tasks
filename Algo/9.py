@@ -10,7 +10,6 @@ class Matrix:
             self.data = list(in_matrix)
 
     def __eq__(self, other):
-        # print(self.data == other.data, self.data, other.data)
         return self.data == other.data
 
     def __str__(self) -> str:
@@ -28,19 +27,19 @@ class Matrix:
     def __setitem__(self, key, value):
         if type(key) == tuple:
             k = 0
-            start1 = key[0].start
+            start1 = min(key[0].start, len(self.data))
             stop1 = min(
-                key[0].stop if key[0].stop != None else start1 + 1, len(self.data)
+                (key[0].stop if key[0].stop != None else start1 + 1), len(self.data)
             )
             step1 = key[0].step if key[0].step != None else 1
 
-            start2 = key[1].start
+            start2 = min(key[1].start, len(self.data[0]))
             stop2 = min(
-                key[1].stop if key[1].stop != None else start2 + 1, len(value[0])
+                (key[1].stop if key[1].stop != None else start2 + 1), len(self.data[0])
             )
             step2 = key[1].step if key[1].step != None else 1
             for i in range(start1, stop1, step1):
-                self.data[i][start2:stop2:step2] = value[k]
+                self.data[i][start2:stop2:step2] = value[k][: (stop2 - start2) // step2]
                 k += 1
         else:
             self.data.__setitem__(key, value)
@@ -70,7 +69,7 @@ class Matrix:
         return out
 
     def __matmul__(self, other):
-        LIMIT = 1
+        LIMIT = 15
         ln = max(len(self.data), len(self.data[0]), len(other[0]))
         if ln & (ln - 1) != 0:
             i = 0
@@ -97,6 +96,7 @@ class Matrix:
         half_ln = ln // 2
         if ln <= LIMIT:
             return m1 * m2
+
         a, b, c, d = (
             m1[0:half_ln, 0:half_ln],
             m1[0:half_ln, half_ln:ln],
@@ -119,24 +119,12 @@ class Matrix:
         p6 = (b - d) @ (g + h)
         p7 = (a - c) @ (e + f)
 
-        q1 = p5 + p4 - p2 + p6
-        q2 = p1 + p2
-        q3 = p3 + p4
-        q4 = p1 + p5 - p3 - p7
-
-        out = Matrix([[0] * ln for i in range(ln)])
-        out[0:half_ln, 0:half_ln] = q1
-        out[0:half_ln, half_ln:ln] = q2
-        out[half_ln:ln, 0:half_ln] = q3
-        out[half_ln:ln, half_ln:ln] = q4
-
-        out = out[: len(self.data), : len(other[0])]
-        if out != self * other:
-            print(self)
-            print(other)
-            print(out, self * other)
-            print("---")
-        return out[: len(self.data), : len(self.data[0])]
+        out = Matrix([[0] * (len(other[0])) for _, _ in enumerate(self.data)])
+        out[0:half_ln, 0:half_ln] = p5 + p4 - p2 + p6
+        out[0:half_ln, half_ln:ln] = p1 + p2
+        out[half_ln:ln, 0:half_ln] = p3 + p4
+        out[half_ln:ln, half_ln:ln] = p1 + p5 - p3 - p7
+        return out
 
 
 class Bench:
@@ -146,7 +134,6 @@ class Bench:
         self.results = []
 
     def run(self, func, inp):
-        # print([str(e) for e in inp])
         start = time()
         out = func(*inp)
         return (out, time() - start)
@@ -183,7 +170,8 @@ be = Bench()
 
 tests_count = 15
 for _ in range(15):
-    i, j, k = randint(1, 10), randint(1, 10), randint(1, 10)
+    i, j, k = randint(1, 50), randint(1, 50), randint(1, 50)
+    # i, j, k = 1, 2, 1
     a = Matrix([[randint(0, 100) for _ in range(j)] for _ in range(i)])
     b = Matrix([[randint(0, 100) for _ in range(k)] for _ in range(j)])
     be.tests.append(
@@ -193,11 +181,10 @@ for _ in range(15):
         ]
     )
     assert len(a[0]) == len(b)
-    a @ b
 
 # строки это столбцы, КАК ОБЫЧНО А НЕТ НЕ ПЕРЕПУТАНЫ
-print(Matrix([[50], [69], [66]]) * Matrix([[9]]))
-print(Matrix([[50], [69], [66]]) @ Matrix([[9]]))
+# print(Matrix([[1], [62], [79]]) * Matrix([[42]]))
+# print(Matrix([[1], [62], [79]]) @ Matrix([[42]]))
 
 
 def triv(a, b):
