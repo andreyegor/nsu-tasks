@@ -1,9 +1,17 @@
+from time import sleep, time
+from random import randint
+
+
 class Matrix:
     def __init__(self, in_matrix: list):
         if type(in_matrix) == Matrix:
             self.data = in_matrix.data
         else:
             self.data = list(in_matrix)
+
+    def __eq__(self, other):
+        # print(self.data == other.data, self.data, other.data)
+        return self.data == other.data
 
     def __str__(self) -> str:
         return str(self.data)
@@ -21,16 +29,18 @@ class Matrix:
         if type(key) == tuple:
             k = 0
             start1 = key[0].start
-            stop1 = key[0].stop if key[0].stop != None else start1 + 1
+            stop1 = min(
+                key[0].stop if key[0].stop != None else start1 + 1, len(self.data)
+            )
             step1 = key[0].step if key[0].step != None else 1
 
             start2 = key[1].start
             stop2 = min(
-                key[1].stop if key[1].stop != None else start2 + 1, len(self.data[0])
+                key[1].stop if key[1].stop != None else start2 + 1, len(value[0])
             )
             step2 = key[1].step if key[1].step != None else 1
             for i in range(start1, stop1, step1):
-                self.data[i][start2:stop2:step2] = value[k][: (stop2 - start2) // step2]
+                self.data[i][start2:stop2:step2] = value[k]
                 k += 1
         else:
             self.data.__setitem__(key, value)
@@ -38,7 +48,7 @@ class Matrix:
     def __add__(self, other):
         return Matrix(
             [
-                [self.data[i][j] + other[i][j] for j, _ in enumerate(self.data)]
+                [self.data[i][j] + other[i][j] for j, _ in enumerate(self.data[0])]
                 for i, _ in enumerate(self.data)
             ]
         )
@@ -46,7 +56,7 @@ class Matrix:
     def __sub__(self, other):
         return Matrix(
             [
-                [self.data[i][j] - other[i][j] for j, _ in enumerate(self.data)]
+                [self.data[i][j] - other[i][j] for j, _ in enumerate(self.data[0])]
                 for i, _ in enumerate(self.data)
             ]
         )
@@ -61,16 +71,17 @@ class Matrix:
 
     def __matmul__(self, other):
         LIMIT = 1
-        ln = max(len(self.data), len(self.data[0]), len(other))
-        if ln & (ln - 1) != 0 or not (
-            len(self.data) == len(self.data[0]) == len(other)
-        ):
+        ln = max(len(self.data), len(self.data[0]), len(other[0]))
+        if ln & (ln - 1) != 0:
             i = 0
             while ln:
                 ln >>= 1
                 i += 1
             ln = 1 << (i)
 
+        if not (
+            len(self.data) == ln and len(self.data[0]) == ln and len(other[0]) == ln
+        ):
             m1, m2 = Matrix([[0] * ln for i in range(ln)]), Matrix(
                 [[0] * ln for i in range(ln)]
             )
@@ -113,15 +124,90 @@ class Matrix:
         q3 = p3 + p4
         q4 = p1 + p5 - p3 - p7
 
-        out = Matrix([[0] * len(self.data) for i in range(len(other[0]))])
+        out = Matrix([[0] * ln for i in range(ln)])
         out[0:half_ln, 0:half_ln] = q1
-        out[0:half_ln, half_ln : len(other[0])] = q2
-        out[half_ln : len(self.data), 0:half_ln] = q3
-        out[half_ln : len(self.data), half_ln : len(other[0])] = q4
-        return out
+        out[0:half_ln, half_ln:ln] = q2
+        out[half_ln:ln, 0:half_ln] = q3
+        out[half_ln:ln, half_ln:ln] = q4
+
+        out = out[: len(self.data), : len(other[0])]
+        if out != self * other:
+            print(self)
+            print(other)
+            print(out, self * other)
+            print("---")
+        return out[: len(self.data), : len(self.data[0])]
 
 
-m1 = Matrix([[1, 2, 3], [4, 5, 6]])
-m2 = Matrix([[1, 2], [3, 4], [5, 6]])
-print(len(m1))
-print(m2 @ m1, m2 * m1)
+class Bench:
+    def __init__(self):
+        self.tests = []
+        self.funcs = []
+        self.results = []
+
+    def run(self, func, inp):
+        # print([str(e) for e in inp])
+        start = time()
+        out = func(*inp)
+        return (out, time() - start)
+
+    def do(self):
+        for test in self.tests:
+            self.results.append([])
+            for foo in self.funcs:
+                self.results[-1].append(self.run(foo, test)[1])
+
+    def print_formatted(self):
+        benchmarks = [f"test {i}" for i, _ in enumerate(be.tests)]
+        algos = [foo.__name__ for foo in be.funcs]
+        results = [list(map(str, e)) for e in self.results]
+
+        heading = ["Benchmark", *algos]
+        lines = [[benchmarks[i], *results[i]] for i in range(len(benchmarks))]
+        columns_width = [
+            max(len(str(heading[i])), *[len(str(line[i])) for line in lines])
+            for i in range(len(heading))
+        ]
+
+        normalized_heading = [
+            heading[i].ljust(columns_width[i]) for i in range(len(heading))
+        ]
+        print("|" + "|".join(normalized_heading) + "|")
+        print("|" + "-" * len("|".join(normalized_heading)) + "|")
+        for line in lines:
+            line = [line[i].ljust(columns_width[i]) for i in range(len(line))]
+            print("|" + "|".join(line) + "|")
+
+
+be = Bench()
+
+tests_count = 15
+for _ in range(15):
+    i, j, k = randint(1, 10), randint(1, 10), randint(1, 10)
+    a = Matrix([[randint(0, 100) for _ in range(j)] for _ in range(i)])
+    b = Matrix([[randint(0, 100) for _ in range(k)] for _ in range(j)])
+    be.tests.append(
+        [
+            Matrix([[randint(0, 10) for _ in range(j)] for _ in range(i)]),
+            Matrix([[randint(0, 10) for _ in range(k)] for _ in range(j)]),
+        ]
+    )
+    assert len(a[0]) == len(b)
+    a @ b
+
+# строки это столбцы, КАК ОБЫЧНО А НЕТ НЕ ПЕРЕПУТАНЫ
+print(Matrix([[50], [69], [66]]) * Matrix([[9]]))
+print(Matrix([[50], [69], [66]]) @ Matrix([[9]]))
+
+
+def triv(a, b):
+    return a * b
+
+
+def shtra(a, b):
+    return a @ b
+
+
+be.funcs = [triv, shtra]
+be.do()
+be.print_formatted()
