@@ -2,6 +2,7 @@
 #include <cassert>
 #include <cstddef>
 #include <tuple>
+
 typedef struct {
     int key;
     int priority;
@@ -79,16 +80,30 @@ public:
         return now;
     }
 
-    std::tuple<TreapNode*, TreapNode*> split(int key) {//vizyvaetsa iz root
-        if (key > this->value.key){
-            auto[rl, rr] = this->right->split(key);
-            this->right = rl;
+    std::pair<TreapNode *, TreapNode *> split(int key) {
+        if (key > this->value.key) {
+            if (this->right != nullptr) {
+                auto splt = right->split(key);
+                this->right = splt.first;
+                if (splt.first != nullptr) splt.first->parent = this;
+                if (splt.second != nullptr) splt.second->parent = nullptr;
+                return {this, splt.second};
+            } else {
+                return {this, nullptr};
+            }
+        } else {
+            if (this->left != nullptr) {
+                auto splt = left->split(key);
+                this->left = splt.second;
+                if (splt.first != nullptr) splt.first->parent = nullptr;
+                if (splt.second != nullptr) splt.second->parent = this;
+                return {splt.first, this};
+            } else {
+                return {nullptr, this};
+            }
         }
-        else{
-            
-        }
+    };
 
-    }
 };
 
 int main() {
@@ -102,5 +117,6 @@ int main() {
 
     auto *treap = (new TreapNode(aaa))->getNoParents();
 
+    auto trps = treap->split(20);
     return 0;
 };
