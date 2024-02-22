@@ -1,7 +1,7 @@
 #include <vector>
 #include <cassert>
 #include <cstddef>
-
+#include <tuple>
 typedef struct {
     int key;
     int priority;
@@ -63,6 +63,7 @@ public:
 
     TreapNode(const std::vector<TreapVal> &values) : TreapNode(values[0]) {
         fromSortedArray(values, 1, this);
+
     }
 
     ~TreapNode() {
@@ -70,7 +71,7 @@ public:
         delete right;
     }
 
-    TreapNode *getRoot() {//TODO vozmozno stoit ubrat v private
+    TreapNode *getNoParents() {//TODO peredelat root na flagi
         TreapNode *now = this;
         while (now->parent) {
             now = now->parent;
@@ -78,6 +79,16 @@ public:
         return now;
     }
 
+    std::tuple<TreapNode*, TreapNode*> split(int key) {//vizyvaetsa iz root
+        if (key > this->value.key){
+            auto[rl, rr] = this->right->split(key);
+            this->right = rl;
+        }
+        else{
+            
+        }
+
+    }
 };
 
 int main() {
@@ -89,7 +100,7 @@ int main() {
         aaa.emplace_back(TreapVal{keys[i], values[i]});
     }
 
-    auto *treap = (new TreapNode(aaa))->getRoot();
+    auto *treap = (new TreapNode(aaa))->getNoParents();
 
     return 0;
 };
