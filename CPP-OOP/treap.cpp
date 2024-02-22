@@ -117,7 +117,7 @@ public:
             return this;
         } else {
             if (other->left != nullptr) {
-                other->left = this->merge(other->left);
+                other->left = other->left->merge(this);
             } else {
                 other->left = this;
             }
@@ -125,6 +125,12 @@ public:
             return other;
 
         }
+    }
+
+    TreapNode *insert(TreapVal in_val) {
+        auto half = this->split(in_val.key);
+        auto *new_node = new TreapNode(in_val);
+        return half.second->merge(half.first->merge(new_node));
     }
 
 };
@@ -142,5 +148,6 @@ int main() {
 
     auto trps = treap->split(20);
     TreapNode *trp = trps.first->merge(trps.second);
+    trp = trp->insert(TreapVal{20, 7});
     return 0;
 };
