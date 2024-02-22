@@ -104,6 +104,29 @@ public:
         }
     };
 
+    TreapNode *merge(TreapNode *other) {
+        if (other == nullptr) return this;
+
+        if (this->value.priority < other->value.priority) {
+            if (this->right != nullptr) {
+                this->right = this->right->merge(other);
+            } else {
+                this->right = other;
+            }
+            this->right->parent = this;
+            return this;
+        } else {
+            if (other->left != nullptr) {
+                other->left = this->merge(other->left);
+            } else {
+                other->left = this;
+            }
+            other->left->parent = other;
+            return other;
+
+        }
+    }
+
 };
 
 int main() {
@@ -118,5 +141,6 @@ int main() {
     auto *treap = (new TreapNode(aaa))->getNoParents();
 
     auto trps = treap->split(20);
+    TreapNode *trp = trps.first->merge(trps.second);
     return 0;
 };
