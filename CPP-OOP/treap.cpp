@@ -68,11 +68,11 @@ public:
     }
 
     ~TreapNode() {
-        delete left; // TODO a nuzna li proverka na nullptr? vrode kak net
+        delete left;
         delete right;
     }
 
-    TreapNode *getNoParents() {//TODO peredelat root na flagi
+    TreapNode *getNoParents() {
         TreapNode *now = this;
         while (now->parent) {
             now = now->parent;
@@ -133,6 +133,16 @@ public:
         return half.second->merge(half.first->merge(new_node));
     }
 
+    TreapNode *remove(int key) {
+        auto half = this->split(key);
+        TreapNode *root = half.second;
+        if (half.second->left != nullptr)half.second = half.second->left->merge(half.second->right);
+        else half.second = half.second->right;
+        if (half.second != nullptr) half.second->parent = nullptr;
+        delete root;
+        return half.first->merge(half.second);
+    }
+
 };
 
 int main() {
@@ -149,5 +159,6 @@ int main() {
     auto trps = treap->split(20);
     TreapNode *trp = trps.first->merge(trps.second);
     trp = trp->insert(TreapVal{20, 7});
+    trp = trp->remove(20);
     return 0;
 };
