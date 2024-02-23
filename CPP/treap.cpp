@@ -1,6 +1,7 @@
 #include <vector>
 #include <tuple>
 #include <iostream>
+#include "gtest/gtest.h"
 
 typedef struct {
     int key;
@@ -143,31 +144,55 @@ public:
     }
 
     bool includes(int key) {
-        auto pair = split(key);
-        bool out = pair.second->value.key == key;
-        pair.first->merge(pair.second);
-        return out;
+        if (this->value.key == key) {
+            return true;
+        }
+        if (this->left != nullptr && this->left->includes(key))
+            return true;
+        if (this->right != nullptr && this->right->includes(key))
+            return true;
+        return false;
     }
 
 };
 
+const int TEST_KEYS[8] = {8, 12, 14, 15, 18, 23, 24, 25};
+const int TEST_PRIORITIES[8] = {10, 8, 14, 4, 9, 6, 15, 11};
 
-int main() {
-    int keys[8] = {8, 12, 14, 15, 18, 23, 24, 25};
-    int values[8] = {10, 8, 14, 4, 9, 6, 15, 11};
-    std::vector<TreapVal> aaa;
+TreapNode *get_test_data() {
+    std::vector<TreapVal> values;
 
     for (int i = 0; i < 8; i++) {
-        aaa.emplace_back(TreapVal{keys[i], values[i]});
+        values.emplace_back(TreapVal{TEST_KEYS[i], TEST_PRIORITIES[i]});
     }
 
-    auto *treap = (new TreapNode(aaa))->getNoParents();
+    auto *treap = (new TreapNode(values))->getNoParents();
+    return treap;
+}
 
-    auto trps = treap->split(20);
-    TreapNode *trp = trps.first->merge(trps.second);
-    trp = trp->insert(TreapVal{20, 7});
-    std::cout << trp->includes(20) << std::endl;
-    trp = trp->remove(20);
-    delete trp;
-    return 0;
+TEST(lonley_test_suite, linear_create_test) {
+    TreapNode *treap = get_test_data();
+
+    for (int i = 0; i < 8; i++) {
+        EXPECT_TRUE(treap->includes(TEST_KEYS[i]));
+    }
+    delete treap;
+}
+
+TEST(lonley_test_suite, insert_test) {
+    TreapNode *treap = get_test_data();
+    treap->insert(TreapVal{20, 7});
+    EXPECT_TRUE(treap->includes(20));
+    treap->remove(20);
+    EXPECT_FALSE(treap->includes(20));
+    delete treap;
+}
+
+TEST(lonley_test_suite, do_nothing__test) {
+
+}
+
+int main(int argc, char **argv) {
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 };
