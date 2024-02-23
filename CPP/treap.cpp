@@ -1,7 +1,6 @@
 #include <vector>
-#include <cassert>
-#include <cstddef>
 #include <tuple>
+#include <iostream>
 
 typedef struct {
     int key;
@@ -143,7 +142,15 @@ public:
         return half.first->merge(half.second);
     }
 
+    bool includes(int key) {
+        auto pair = split(key);
+        bool out = pair.second->value.key == key;
+        pair.first->merge(pair.second);
+        return out;
+    }
+
 };
+
 
 int main() {
     int keys[8] = {8, 12, 14, 15, 18, 23, 24, 25};
@@ -159,6 +166,8 @@ int main() {
     auto trps = treap->split(20);
     TreapNode *trp = trps.first->merge(trps.second);
     trp = trp->insert(TreapVal{20, 7});
+    std::cout << trp->includes(20) << std::endl;
     trp = trp->remove(20);
+    delete trp;
     return 0;
 };
