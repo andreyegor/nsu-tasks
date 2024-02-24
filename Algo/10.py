@@ -11,17 +11,17 @@ from random import randint, choice
 letters = ascii_uppercase+ascii_lowercase
 
 def lsd_radix_sort(arr: list[str]):
-    things = {key: [] for key in letters}
+    things = [[] for e in range(ord(ascii_lowercase[-1]) - 64)]
     ln = len(arr[0])
     for i in range(ln - 1, -1, -1):
         for e in arr:
-            things[e[i]].append(e)
+            things[ord(e[i])-65].append(e)
 
         arr.clear()
         for e in letters:
-            for q in things[e]:
+            for q in things[ord(e)-65]:
                 arr.append(q)
-            things[e].clear()
+            things[ord(e)-65].clear()
 
 def not_lsd_radix_sort(arr):
     def merge(arr, left, mid, right):
