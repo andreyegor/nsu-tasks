@@ -61,7 +61,7 @@ class Matrix:
                     out[i][j] += self.data[i][k] * other[k][j]
         return out
 
-    def __matmul__(self, other):
+    def __xor__(self, other):
         LIMIT = 16
 
         len(self)
@@ -83,13 +83,13 @@ class Matrix:
             other[half_ln : len(self), half_ln : len(self)],
         )
 
-        p1 = a @ (f - h)
-        p2 = (a + b) @ h
-        p3 = (c + d) @ e
-        p4 = d @ (g - e)
-        p5 = (a + d) @ (e + h)
-        p6 = (b - d) @ (g + h)
-        p7 = (a - c) @ (e + f)
+        p1 = a ^ (f - h)
+        p2 = (a + b) ^ h
+        p3 = (c + d) ^ e
+        p4 = d ^ (g - e)
+        p5 = (a + d) ^ (e + h)
+        p6 = (b - d) ^ (g + h)
+        p7 = (a - c) ^ (e + f)
 
         out = Matrix([[0] * (len(other[0])) for _, _ in enumerate(self.data)])
         out[0:half_ln, 0:half_ln] = p5 + p4 - p2 + p6
@@ -144,7 +144,8 @@ class Bench:
         self.results = [[] for _ in range(len(self.funcs))]
         for i, test in enumerate(self.tests):
             self.benchmarks += [
-                f"matrix {len(test[0])}x{len(test[0][0])} and {len(test[1])}x{len(test[1][0])}",
+                "matrix%ix%i and %ix%i"
+                % (len(test[0]), len(test[0][0]), len(test[1]), len(test[1][0])),
                 "-sample mean ",
                 "-standard deviation",
                 "-geometric mean",
@@ -155,7 +156,7 @@ class Bench:
                 standard_deviation = sum((sample_mean - e) ** 2 for e in tests) / len(
                     tests
                 )
-                geometric_mean = reduce(lambda a, b: a * b, tests) ** (1 / len(tests))
+                geometric_mean = reduce(lambda a, b: a * b, tests) ** (1.0 / len(tests))
                 self.results[i] += [
                     "",
                     str(sample_mean),
@@ -163,7 +164,7 @@ class Bench:
                     str(geometric_mean),
                 ]
                 print(
-                    f"{foo.__name__}",
+                    foo.__name__,
                     str(sample_mean),
                     str(standard_deviation),
                     str(geometric_mean),
@@ -174,8 +175,8 @@ class Bench:
         algos = [foo.__name__ for foo in self.funcs]
         results = list(zip(*self.results))
 
-        heading = ["Benchmark", *algos]
-        lines = [[benchmarks[i], *results[i]] for i in range(len(benchmarks))]
+        heading = ["Benchmark"] + algos
+        lines = [[benchmarks[i]] + list(results[i]) for i in range(len(benchmarks))]
         columns_width = [
             max(len(str(heading[i])), *[len(str(line[i])) for line in lines])
             for i in range(len(heading))
@@ -194,8 +195,8 @@ class Bench:
 be = Bench()
 
 tests_count = 15
-for q in range(1, 9):
-    i, j, k = 2**q, 2**q, 2**q
+for q in range(100, 1000, 100):
+    i, j, k = randint(q, q + 100), randint(q, q + 100), randint(q, q + 100)
     a = Matrix([[randint(0, 50) for _ in range(j)] for _ in range(i)])
     b = Matrix([[randint(0, 50) for _ in range(k)] for _ in range(j)])
     be.tests.append(
@@ -240,7 +241,7 @@ def recursive_8(a, b):
 
 def strassen(a, b):
     lna, lnb = expand_2degree(a, b)
-    return (Matrix(a) @ Matrix(b))[0:lna, 0:lnb]
+    return (Matrix(a) ^ Matrix(b))[0:lna, 0:lnb]
 
     # m1, m2 = [[0] * ln for i in range(ln)], [[0] * ln for i in range(ln)]
     # for i, _ in enumerate(a):
@@ -386,4 +387,45 @@ upd: добавлено сравнение с алгоритмом на 8 рек
 |-sample mean              |3.6855241537094114    |4.128388094902038     |2.912790822982788     |
 |-standard deviation       |0.008761427209049658  |0.0025224344417785    |0.0017227230631283422 |
 |-geometric mean           |3.6843794957539684    |4.128082016399099     |2.9124992342783       |
+
+upd 2 адаптировал под pypy
+
+|Benchmark                |trivial          |recursive_8     |strassen        |
+|-----------------------------------------------------------------------------|
+|matrix125x159 and 159x154|                 |                |                |
+|-sample mean             |0.0384399175644  |0.349234390259  |0.288808298111  |
+|-standard deviation      |5.05317442963e-05|0.00483568427746|0.00220278880316|
+|-geometric mean          |0.0378509207135  |0.343758621434  |0.285204417463  |
+|matrix216x300 and 300x287|                 |                |                |
+|-sample mean             |0.205554533005   |2.25491261482   |1.78076248169   |
+|-standard deviation      |0.000161307634276|0.00778164152396|0.00180575961544|
+|-geometric mean          |0.205172380049   |2.25325315722   |1.78026891026   |
+|matrix335x354 and 354x372|                 |                |                |
+|-sample mean             |0.512167024612   |2.44212214947   |1.94245946407   |
+|-standard deviation      |0.00128649691553 |0.0073617743724 |0.0042773646052 |
+|-geometric mean          |0.510928125478   |2.44063485466   |1.94135533519   |
+|matrix415x493 and 493x484|                 |                |                |
+|-sample mean             |1.15102291107    |2.41605267525   |1.96204724312   |
+|-standard deviation      |0.00628883970754 |0.00950428894505|0.0198819698282 |
+|-geometric mean          |1.14851275741    |2.4141247937    |1.95729538131   |
+|matrix548x516 and 516x512|                 |                |                |
+|-sample mean             |1.64946715832    |18.7696464539   |13.0038830996   |
+|-standard deviation      |0.00330518580979 |0.345103869251  |0.556561173581  |
+|-geometric mean          |1.64848641669    |18.7604771395   |12.9825335687   |
+|matrix669x605 and 605x606|                 |                |                |
+|-sample mean             |2.71294851303    |18.1177958012   |12.6844403982   |
+|-standard deviation      |0.151543442358   |0.0703150302713 |0.0957493180952 |
+|-geometric mean          |2.69043614269    |18.1158350599   |12.6806919246   |
+|matrix743x709 and 709x731|                 |                |                |
+|-sample mean             |4.25873553753    |17.9768070698   |12.8070575237   |
+|-standard deviation      |0.0112406456377  |0.111588698442  |0.0572032312712 |
+|-geometric mean          |4.25741330529    |17.9737170573   |12.8048175174   |
+|matrix866x813 and 813x891|                 |                |                |
+|-sample mean             |7.15941929817    |17.7862152815   |12.8969342232   |
+|-standard deviation      |0.0443866314144  |0.118025351519  |0.0879926480621 |
+|-geometric mean          |7.15627765511    |17.7829417458   |12.8935590893   |
+|matrix968x972 and 972x955|                 |                |                |
+|-sample mean             |11.4906106949    |18.5089397192   |12.9512557268   |
+|-standard deviation      |0.340964133856   |0.834657932968  |0.875696556353  |
+|-geometric mean          |11.475790545     |18.4871281544   |12.9191518576   |
 """
