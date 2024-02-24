@@ -63,24 +63,24 @@ class Matrix:
 
     def __matmul__(self, other):
         LIMIT = 16
-        m1, m2, ln = Matrix(self.data), Matrix(other), len(other)
 
-        half_ln = ln // 2
-        if ln <= LIMIT:
-            return m1 * m2
+        len(self)
+        if len(self) <= LIMIT:
+            return self * other
+        half_ln = len(self) // 2
 
         a, b, c, d = (
-            m1[0:half_ln, 0:half_ln],
-            m1[0:half_ln, half_ln:ln],
-            m1[half_ln:ln, 0:half_ln],
-            m1[half_ln:ln, half_ln:ln],
+            self[0:half_ln, 0:half_ln],
+            self[0:half_ln, half_ln : len(self)],
+            self[half_ln : len(self), 0:half_ln],
+            self[half_ln : len(self), half_ln : len(self)],
         )
 
         e, f, g, h = (
-            m2[0:half_ln, 0:half_ln],
-            m2[0:half_ln, half_ln:ln],
-            m2[half_ln:ln, 0:half_ln],
-            m2[half_ln:ln, half_ln:ln],
+            other[0:half_ln, 0:half_ln],
+            other[0:half_ln, half_ln : len(self)],
+            other[half_ln : len(self), 0:half_ln],
+            other[half_ln : len(self), half_ln : len(self)],
         )
 
         p1 = a @ (f - h)
@@ -93,9 +93,39 @@ class Matrix:
 
         out = Matrix([[0] * (len(other[0])) for _, _ in enumerate(self.data)])
         out[0:half_ln, 0:half_ln] = p5 + p4 - p2 + p6
-        out[0:half_ln, half_ln:ln] = p1 + p2
-        out[half_ln:ln, 0:half_ln] = p3 + p4
-        out[half_ln:ln, half_ln:ln] = p1 + p5 - p3 - p7
+        out[0:half_ln, half_ln : len(self)] = p1 + p2
+        out[half_ln : len(self), 0:half_ln] = p3 + p4
+        out[half_ln : len(self), half_ln : len(self)] = p1 + p5 - p3 - p7
+        return out
+
+    def __pow__(self, other):
+        LIMIT = 16
+
+        len(self)
+        if len(self) <= LIMIT:
+            return self * other
+        half_ln = len(self) // 2
+
+        a, b, c, d = (
+            self[0:half_ln, 0:half_ln],
+            self[0:half_ln, half_ln : len(self)],
+            self[half_ln : len(self), 0:half_ln],
+            self[half_ln : len(self), half_ln : len(self)],
+        )
+
+        e, f, g, h = (
+            other[0:half_ln, 0:half_ln],
+            other[0:half_ln, half_ln : len(self)],
+            other[half_ln : len(self), 0:half_ln],
+            other[half_ln : len(self), half_ln : len(self)],
+        )
+
+        out = Matrix([[0] * (len(other[0])) for _, _ in enumerate(self.data)])
+        out[0:half_ln, 0:half_ln] = a**e + b**g
+        out[0:half_ln, half_ln : len(self)] = a**f + b**h
+        out[half_ln : len(self), 0:half_ln] = c**e + d**g
+        out[half_ln : len(self), half_ln : len(self)] = c**f + d**h
+        assert out == self * other
         return out
 
 
@@ -165,8 +195,8 @@ class Bench:
 be = Bench()
 
 tests_count = 15
-for q in range(100, 501, 100):
-    i, j, k = q, q, q
+for q in range(1, 8):
+    i, j, k = 2**q, 2**q, 2**q
     a = Matrix([[randint(0, 50) for _ in range(j)] for _ in range(i)])
     b = Matrix([[randint(0, 50) for _ in range(k)] for _ in range(j)])
     be.tests.append(
@@ -178,11 +208,7 @@ for q in range(100, 501, 100):
     assert len(a[0]) == len(b)
 
 
-def trivial(a, b):
-    return a * b
-
-
-def strassen(a, b):
+def expand_2degree(a, b):
     lna, lnb, lnab = len(a), len(b[0]), len(a[0])
     ln = max(lna, lnb, lnab)
     if ln & ln - 1:
@@ -191,7 +217,7 @@ def strassen(a, b):
             ln >>= 1
             i += 1
         ln = 1 << (i)
-        
+
     if not (lna == lnb == lnab == ln):
         for e in a:
             e += [0] * (ln - lnab)
@@ -201,20 +227,34 @@ def strassen(a, b):
             e += [0] * (ln - lnb)
         b.data += [[0] * ln for _ in range(ln - lnab)]
 
+    return lna, lnb
 
-        # m1, m2 = [[0] * ln for i in range(ln)], [[0] * ln for i in range(ln)]
-        # for i, _ in enumerate(a):
-        #     for j, _ in enumerate(a[i]):
-        #         m1[i][j] = a[i][j]
-        #     for i, _ in enumerate(a):
-        #         for j, _ in enumerate(a[i]):
-        #             m2[i][j] = a[i][j]
-    # else:
-    #     m1, m2 = a, b
+
+def trivial(a, b):
+    return a * b
+
+
+def recursive_8(a, b):
+    lna, lnb = expand_2degree(a, b)
+    return (Matrix(a) ** Matrix(b))[0:lna, 0:lnb]
+
+
+def strassen(a, b):
+    lna, lnb = expand_2degree(a, b)
     return (Matrix(a) @ Matrix(b))[0:lna, 0:lnb]
 
+    # m1, m2 = [[0] * ln for i in range(ln)], [[0] * ln for i in range(ln)]
+    # for i, _ in enumerate(a):
+    #     for j, _ in enumerate(a[i]):
+    #         m1[i][j] = a[i][j]
+    #     for i, _ in enumerate(a):
+    #         for j, _ in enumerate(a[i]):
+    #             m2[i][j] = a[i][j]
+    # else:
+    #     m1, m2 = a, b
 
-be.funcs = [trivial, strassen]
+
+be.funcs = [trivial, recursive_8, strassen]
 be.do()
 be.print_formatted()
 """
@@ -309,4 +349,38 @@ be.print_formatted()
 Итог: Этот алгоритм быстрее тривиального на квадратных матрицах размером в квадрат 
 двух больше 64 и на матрицах с максимальной длинной стороны не меньше 500, так как
 расширение матрицы в занимает довольно много времени
+
+upd: добавлено сравнение с алгоритмом на 8 рекурсивных вызовов, он ожидаемо медленнее 
+двух других, чтобы не состариться в ожидании результата ограничился тестами только на 
+матрицах степени двойки, до 128x128
+|Benchmark                 |trivial               |recursive_8           |strassen              |
+|-----------------------------------------------------------------------------------------------|
+|matrix 2x2 and 2x2        |                      |                      |                      |
+|-sample mean              |0.0001004934310913086 |0.0                   |0.0                   |
+|-standard deviation       |9.08903672325323e-08  |0.0                   |0.0                   |
+|-geometric mean           |0.0                   |0.0                   |0.0                   |
+|matrix 4x4 and 4x4        |                      |                      |                      |
+|-sample mean              |0.0                   |0.0                   |0.0                   |
+|-standard deviation       |0.0                   |0.0                   |0.0                   |
+|-geometric mean           |0.0                   |0.0                   |0.0                   |
+|matrix 8x8 and 8x8        |                      |                      |                      |
+|-sample mean              |0.00010068416595458985|0.00013024806976318358|0.00019998550415039061|
+|-standard deviation       |9.123571146574249e-08 |1.5268103709331626e-07|1.5997753507690502e-07|
+|-geometric mean           |0.0                   |0.0                   |0.0                   |
+|matrix 16x16 and 16x16    |                      |                      |                      |
+|-sample mean              |0.00091094970703125   |0.000891733169555664  |0.0009361028671264649 |
+|-standard deviation       |1.6814331956993556e-07|2.333933571208036e-07 |1.365339136327748e-07 |
+|-geometric mean           |0.0                   |0.0                   |0.0                   |
+|matrix 32x32 and 32x32    |                      |                      |                      |
+|-sample mean              |0.007720279693603516  |0.014688348770141602  |0.007461094856262207  |
+|-standard deviation       |8.103522168312338e-07 |1.0918621683231323e-07|1.1662581812288408e-07|
+|-geometric mean           |0.0076714769555885345 |0.01468459286254731   |0.007453327038434238  |
+|matrix 64x64 and 64x64    |                      |                      |                      |
+|-sample mean              |0.05621423721313477   |0.17685389518737793   |0.055272245407104494  |
+|-standard deviation       |1.8172744603361935e-07|2.267278091494518e-06 |4.92624430989963e-07  |
+|-geometric mean           |0.05621262158664763   |0.17684750800169213   |0.055267801743282996  |
+|matrix 128x128 and 128x128|                      |                      |                      |
+|-sample mean              |0.4503962516784668    |1.879444432258606     |0.4097021818161011    |
+|-standard deviation       |5.18395724839138e-06  |0.0001000685268883217 |9.397015952856691e-05 |
+|-geometric mean           |0.4503905278082385    |1.87941783142283      |0.40958963825661876   |
 """
