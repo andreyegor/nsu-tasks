@@ -3,10 +3,10 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-typedef struct {
+struct TreapVal{
     int key;
     int priority;
-} TreapVal;
+};
 
 class TreapNode {
 
