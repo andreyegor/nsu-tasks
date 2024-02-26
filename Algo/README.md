@@ -5,3 +5,4 @@
 * Мини-задача 6 [Wiggle Sort II](https://leetcode.com/problems/wiggle-sort-ii/submissions/1170581301/)
 * Мини-задача 7 ([2 балла](https://leetcode.com/problems/sort-an-array/submissions/1175117954)) [Sort an Array](poka_netu.heh)
 * Мини-задача 8 ([O(n*log(n))](https://leetcode.com/problems/global-and-local-inversions/submissions/1175344619)) [Global and Local Inversions](https://leetcode.com/problems/global-and-local-inversions/submissions/1175667387)
+* Мини-задача 9 [Sort Colors](https://leetcode.com/problems/sort-colors/submissions/1186601067)

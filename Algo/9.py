@@ -137,8 +137,8 @@ class Bench:
 
     def run(self, func, inp):
         start = time()
-        func(*inp)
-        return time() - start
+        out = func(*inp)
+        return time() - start, out[0]
 
     def do(self):
         self.results = [[] for _ in range(len(self.funcs))]
@@ -151,7 +151,7 @@ class Bench:
                 "-geometric mean",
             ]
             for i, foo in enumerate(self.funcs):
-                tests = [self.run(foo, test) for _ in range(10)]
+                tests = [self.run(foo, test)[0] for _ in range(10)]
                 sample_mean = sum(tests) / len(tests)
                 standard_deviation = sum((sample_mean - e) ** 2 for e in tests) / len(
                     tests
@@ -195,8 +195,8 @@ class Bench:
 be = Bench()
 
 tests_count = 15
-for q in range(100, 1000, 100):
-    i, j, k = randint(q, q + 100), randint(q, q + 100), randint(q, q + 100)
+for q in range(1, 10):
+    i, j, k = 2**q, 2**q, 2**q
     a = Matrix([[randint(0, 50) for _ in range(j)] for _ in range(i)])
     b = Matrix([[randint(0, 50) for _ in range(k)] for _ in range(j)])
     be.tests.append(
@@ -242,16 +242,6 @@ def recursive_8(a, b):
 def strassen(a, b):
     lna, lnb = expand_2degree(a, b)
     return (Matrix(a) ^ Matrix(b))[0:lna, 0:lnb]
-
-    # m1, m2 = [[0] * ln for i in range(ln)], [[0] * ln for i in range(ln)]
-    # for i, _ in enumerate(a):
-    #     for j, _ in enumerate(a[i]):
-    #         m1[i][j] = a[i][j]
-    #     for i, _ in enumerate(a):
-    #         for j, _ in enumerate(a[i]):
-    #             m2[i][j] = a[i][j]
-    # else:
-    #     m1, m2 = a, b
 
 
 be.funcs = [trivial, recursive_8, strassen]
@@ -428,4 +418,6 @@ upd 2 адаптировал под pypy
 |-sample mean             |11.4906106949    |18.5089397192   |12.9512557268   |
 |-standard deviation      |0.340964133856   |0.834657932968  |0.875696556353  |
 |-geometric mean          |11.475790545     |18.4871281544   |12.9191518576   |
+
+upd вроде правивый PyPy на
 """
