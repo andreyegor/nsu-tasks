@@ -8,20 +8,32 @@ from random import randint, choice
 #     for i in range(len(ascii_lowercase)*2)
 # ]
 
-letters = ascii_uppercase+ascii_lowercase
+letters = ascii_uppercase + ascii_lowercase
+
+
+def count_sort(arr, k):
+    things = [0] * (ord(ascii_lowercase[-1]) - 63)
+    out = [None] * len(arr)
+    for e in arr:
+        things[ord(e[k]) - 64] += 1
+
+    places = [0] * (ord(ascii_lowercase[-1]) - 63)
+    place = 0
+    for i in range(len(things)):
+        places[i] = place
+        place += things[i]
+
+    for e in arr:
+        out[places[ord(e[k]) - 64]] = e
+        places[ord(e[k]) - 64] += 1
+    return out
+
 
 def lsd_radix_sort(arr: list[str]):
-    things = [[] for e in range(ord(ascii_lowercase[-1]) - 64)]
-    ln = len(arr[0])
-    for i in range(ln - 1, -1, -1):
-        for e in arr:
-            things[ord(e[i])-65].append(e)
+    for i in range(len(arr[0]) - 1, -1, -1):
+        arr = count_sort(arr, i)
+    return arr
 
-        arr.clear()
-        for e in letters:
-            for q in things[ord(e)-65]:
-                arr.append(q)
-            things[ord(e)-65].clear()
 
 def not_lsd_radix_sort(arr):
     def merge(arr, left, mid, right):
@@ -47,28 +59,28 @@ def not_lsd_radix_sort(arr):
             arr[i] = right_arr[r]
             r += 1
             i += 1
-        
+
     def merge_sort(arr, left=None, right=None):
         if left == None and right == None:
             left = 0
             right = len(arr)
 
-        if right-left-1:
-            mid = (left+right)//2
+        if right - left - 1:
+            mid = (left + right) // 2
             merge_sort(arr, left, mid)
             merge_sort(arr, mid, right)
             merge(arr, left, mid, right)
-    
+
     merge_sort(arr)
-        
+
 
 for i in range(100):
     ln = randint(1, 100)
     cnt = randint(1, 100)
     in_arr = ["".join(choice(letters) for i in range(ln)) for i in range(cnt)]
-    that_arr = in_arr.copy()
+
+    radix_arr = lsd_radix_sort(in_arr)
+    that_arr = sorted(in_arr)
     other_arr = in_arr.copy()
-    in_arr.sort()
-    lsd_radix_sort(that_arr)
     not_lsd_radix_sort(other_arr)
-    assert that_arr == other_arr and that_arr == in_arr
+    assert radix_arr == other_arr and that_arr == radix_arr
