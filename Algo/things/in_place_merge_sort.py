@@ -55,8 +55,8 @@ def merge_sort(arr: list, left=None, right=None) -> None:
 
     buffer_merge_sort(arr, left, lower_mid, upper_mid)
     while lower_mid - left != 1:
-        local_right = lower_mid
-        lower_mid, upper_mid = lower_mid // 2, ceil(lower_mid / 2)
+        local_right = upper_mid
+        lower_mid, upper_mid = (left+upper_mid) // 2, ceil((left+upper_mid) / 2)
         buffer_merge_sort(arr, upper_mid, local_right, left)
         merge(arr, left, lower_mid, local_right, right, upper_mid)
 
@@ -66,8 +66,8 @@ def merge_sort(arr: list, left=None, right=None) -> None:
         left += 1
 
 
-for i in range(0):
-    arr = list(range(randint(500, 1000)))
+for i in range(100):
+    arr = list(range(randint(1, 10)))
     shuffle(arr)
     merge_sort(arr)
     assert arr == sorted(arr)
@@ -76,6 +76,7 @@ for i in range(0):
 arr = [12, 6, 14, 0, 11, 5, 9, 10, 1, 2, 15, 8, 7, 3, 13, 4]
 arr = [7, 6, 0, 3, 2, 5, 1]
 # arr = [4,2,3,1]
+# arr = [1, 0, 2]
 print(arr, len(arr))
 merge_sort(arr)
 print(arr, len(arr))
