@@ -2,9 +2,15 @@ from random import shuffle, randint
 from math import ceil
 
 
+from math import ceil
+from random import shuffle, randint
+
+
 def merge(arr: list, s1: int, f1: int, s2: int, f2: int, out: int) -> None:
     l, r, i = s1, s2, out
-    
+    if f2 < r:
+        return
+
     while l != f1 and r != f2:
         if arr[l] <= arr[r]:
             arr[i], arr[l] = arr[l], arr[i]
@@ -14,12 +20,12 @@ def merge(arr: list, s1: int, f1: int, s2: int, f2: int, out: int) -> None:
             r += 1
         i += 1
 
-    while l < f1:
+    while l != f1:
         arr[i], arr[l] = arr[l], arr[i]
         l += 1
         i += 1
 
-    while r < f2:
+    while r != f2:  # TODO оптимизировать для некоторых случаев неравномерного слияния
         arr[i], arr[r] = arr[r], arr[i]
         r += 1
         i += 1
@@ -27,47 +33,49 @@ def merge(arr: list, s1: int, f1: int, s2: int, f2: int, out: int) -> None:
     return
 
 
-def buffer_merge_sort(arr:list, left, right, buffer):
-    if right - left - 1:
-        mid = (left + right) // 2
-        buffer_merge_sort(arr, left, mid, buffer)
-        buffer_merge_sort(arr, mid, right, buffer)
-        merge(arr, left, mid, mid, right, buffer)
-        for i in range(0, right - left):  # merge в таком случае занимает O(2*n+2*m)
-            arr[i + left], arr[i + buffer] = arr[i + buffer], arr[i + left]
+def buffer_merge_sort(arr, left, right, buffer_start):
+    lower_mid, upper_mid = (left + right) // 2, ceil((left + right) / 2)
+    if right - left == 1:
+        arr[left], arr[buffer_start] = arr[buffer_start], arr[left]
+        return
+    buffer_merge_sort(arr, left, lower_mid, upper_mid)
+    merge_sort(arr, left, upper_mid)
+    merge(arr, left, upper_mid, upper_mid, right, buffer_start)
 
 
-def no_buffer_merge_sort(arr: list, left, right) -> None:
-    if right - left - 1:
-        lower_mid = (left + right) // 2 # два mid необходимо для коррктного merge участка нечётной длинны
-        upper_mid = ceil((left + right) / 2)
-        buffer_merge_sort(arr, left, lower_mid, lower_mid)
-        merge(arr, left, lower_mid, right, len(arr), upper_mid)
-        no_buffer_merge_sort(arr, left, upper_mid)
+def merge_sort(arr: list, left=None, right=None) -> None:
+    if left == None and right == None:
+        left = 0
+        right = len(arr)
+
+    if right - left == 1:
+        return
+    # два mid необходимо для коррктного merge участка нечётной длинны
+    lower_mid, upper_mid = (left + right) // 2, ceil((left + right) / 2)
+
+    buffer_merge_sort(arr, left, lower_mid, upper_mid)
+    while lower_mid - left != 1:
+        local_right = lower_mid
+        lower_mid, upper_mid = lower_mid // 2, ceil(lower_mid / 2)
+        buffer_merge_sort(arr, upper_mid, local_right, left)
+        merge(arr, left, lower_mid, local_right, right, upper_mid)
+
+    left += 1
+    while left < right and arr[left - 1] > arr[left]:
+        arr[left - 1], arr[left] = arr[left], arr[left - 1]
+        left += 1
 
 
-def in_place_merge_sort(arr):
-    mid = ceil(len(arr)/2)
-    buffer_merge_sort(arr, mid, len(arr), 0)
-    no_buffer_merge_sort(arr, 0, mid)
-    i = 1
-    while i <len(arr) and arr[i - 1] > arr[i]: #выполнится один раз без влияния на сложность
-        arr[i - 1], arr[i] = arr[i], arr[i- 1]
-        i+=1
-
-
-for i in range(100):
+for i in range(0):
     arr = list(range(randint(500, 1000)))
     shuffle(arr)
-    in_place_merge_sort(arr)
-    assert arr == list(range(len(arr)))
+    merge_sort(arr)
+    assert arr == sorted(arr)
 
 
-# arr = [2, 1, 3]
-# # arr = [4,2,3,1]
-# arr = [2, 6, 5, 0, 8, 3, 4, 7, 1]
-# arr = [7, 6, 0, 3, 2, 5, 1]
-# arr = [12, 6, 14, 0, 11, 5, 9, 10, 1, 2, 15, 8, 7, 3, 13, 4]
-# print(arr, len(arr))
-# in_place_merge_sort(arr)
-# print(arr, len(arr))
+arr = [12, 6, 14, 0, 11, 5, 9, 10, 1, 2, 15, 8, 7, 3, 13, 4]
+arr = [7, 6, 0, 3, 2, 5, 1]
+# arr = [4,2,3,1]
+print(arr, len(arr))
+merge_sort(arr)
+print(arr, len(arr))
