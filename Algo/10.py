@@ -17,15 +17,13 @@ def count_sort(arr, k):
     for e in arr:
         things[ord(e[k]) - 64] += 1
 
-    places = [0] * (ord(ascii_lowercase[-1]) - 63)
-    place = 0
-    for i in range(len(things)):
-        places[i] = place
-        place += things[i]
+    for i in range(1, len(things)):
+        things[i] += things[i-1]
 
-    for e in arr:
-        out[places[ord(e[k]) - 64]] = e
-        places[ord(e[k]) - 64] += 1
+    for i in range(len(arr)-1, -1, -1):
+        e = arr[i]
+        out[things[ord(e[k]) - 64]-1] = e
+        things[ord(e[k]) - 64] -= 1
     return out
 
 
