@@ -8,4 +8,4 @@
 * Мини-задача 11 [Sort Colors](https://leetcode.com/problems/sort-colors/submissions/1186601067)
 * Мини-задача 12 Sort an Array [Ломуто](https://leetcode.com/problems/sort-an-array/submissions/1186962481) [Хоара](https://leetcode.com/problems/sort-an-array/submissions/1186963385)
 * Мини-задача 16 [Linked List Cycle II](https://leetcode.com/problems/linked-list-cycle-ii/submissions/1194750893)
-* Мини-задача 17 [Reverse Linked List II](https://leetcode.com/problems/reverse-linked-list-ii/submissions/1194852938)
+* Мини-задача 17 [Reverse Linked List II](https://leetcode.com/problems/reverse-linked-list-ii/submissions/1202315700)
