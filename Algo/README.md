@@ -9,3 +9,5 @@
 * Мини-задача 12 Sort an Array [Ломуто](https://leetcode.com/problems/sort-an-array/submissions/1186962481) [Хоара](https://leetcode.com/problems/sort-an-array/submissions/1186963385)
 * Мини-задача 16 [Linked List Cycle II](https://leetcode.com/problems/linked-list-cycle-ii/submissions/1194750893)
 * Мини-задача 17 [Reverse Linked List II](https://leetcode.com/problems/reverse-linked-list-ii/submissions/1202315700)
+* Мини-задача 19 [Merge k Sorted Lists](https://leetcode.com/problems/merge-k-sorted-lists/submissions/1203680203)
+* Мини-задача 20 [Min Stack](https://leetcode.com/problems/min-stack/submissions/1203125669)
