@@ -7,7 +7,8 @@ class Stack:
             self.val = val
             self.prev = prev
 
-    tail = None
+    def __init__(self) -> None:
+        self.tail = None
 
     def push(self, val: Any) -> None:
         if self.tail:
