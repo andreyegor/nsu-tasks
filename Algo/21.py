@@ -2,7 +2,7 @@ from typing import Self
 
 
 class BHeap:
-    class Node:  # как будто лишний
+    class Node:
         def __init__(
             self,
             priority: int,
