@@ -1,11 +1,14 @@
-.macro read
-	li a7 12 
+.macro syscall %n
+	li a7, %n
 	ecall
 .end_macro
 
+.macro read
+	syscall 12
+.end_macro
+
 .macro write
-	li a7 11
-	ecall
+	syscall 11
 .end_macro 
 
 .macro writi %c
@@ -13,7 +16,7 @@
 	write
 .end_macro  
 
-.macro exit
-	li a7 93
-	ecall
+.macro exit %code
+	li a0 %code
+	syscall 93
 .end_macro
