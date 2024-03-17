@@ -226,7 +226,8 @@ TEST(copy_and_copy_assignment_test_suite, copy_test) {
     TreapNode *treap = get_test_data();
     TreapNode *new_treap = (new TreapNode(*treap));
     EXPECT_TRUE(*treap == *new_treap);
-    TreapNode other_treap = *treap;
+    TreapNode other_treap = TreapNode(TreapVal());
+    other_treap = *treap;
     EXPECT_TRUE(*treap == other_treap);
     delete new_treap;
     delete treap;
