@@ -60,11 +60,9 @@ write_num: # a0-> also use t0 t1
     xor t0 t0 t1
     mv a0 t0
 _write_num_count:
-	push ra
-	push t0
+    push_3 ra t0
 	call count_bytes_bits
-	pop t0
-	pop ra
+    pop_3 ra t0
 
 	mv t1 a0
 _write_num_loop:
