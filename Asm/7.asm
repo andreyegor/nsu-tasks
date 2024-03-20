@@ -7,7 +7,7 @@ main:
 read_dec: #-->a0 also use: t0 t1 t2 t3
 	li t0 0
 	li t1 '\n'
-	li t2 0x10000000
+	li t2 0x80000000
     li t4 48
     li t5 10
 _read_dec_before_loop:
@@ -38,7 +38,7 @@ _read_dec_quit:
 _read_dec_error:
 	exit 1
 _read_dec_negative:
-    li t3 0x10000000 #sign
+    li t3 0x80000000 #sign
     j _read_dec_loop
 
 write_dec: # a0-> also use t0 t1
@@ -46,7 +46,7 @@ write_dec: # a0-> also use t0 t1
     li t1 0 #counter
 
 	mv t0 a0
-    li t2 0x10000000
+    li t2 0x80000000
     and t2 t2 t0
     beq t2 zero _write_dec_stack_loop
 
@@ -81,7 +81,7 @@ _write_dec_end:
 	ret
 
 div10: #a0->a0 also use
-    li t1 0x10000000
+    li t1 0x80000000
     and t1 t1 a0 #sign
     xor a0 a0 t1
 
@@ -104,7 +104,7 @@ _div10_zero:
     ret
 
 mod10:
-    li t0 0x10000000 #remove sign
+    li t0 0x80000000 #remove sign
     or a0 a0 t0
     xor a0 a0 t0
 
