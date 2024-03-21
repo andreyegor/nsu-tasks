@@ -1,5 +1,6 @@
 .include "things.asm"
-
+.text
+.globl main
 main:
 	li t2 '\n'
 	read
@@ -17,4 +18,4 @@ main:
 	
 
 quit:
-	exit
+	exit 0

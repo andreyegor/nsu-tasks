@@ -1,6 +1,6 @@
 .include "things.asm"
-
-#main code
+.text
+.globl main
 main:
 	li s8 '+'
 	li s9 '-'
@@ -13,7 +13,6 @@ main:
 	mv s2 a0
 	read
 	mv s3 a0
-	writi '\n'
 
 	beq s3 s8 add
 	beq s3 s9 sub
@@ -105,18 +104,6 @@ _read_num_quit:
 	ret
 _read_num_error:
 	exit 1
-	
-count_bytes_bits: #a0-->a0, also use t0
-	mv t0 a0
-	li a0 0
-	beq zero t0 _count_bytes_bits_quit
-_count_bytes_bits_loop:
-	srli t0 t0 4
-	beq zero t0 _count_bytes_bits_quit
-	addi a0 a0 4
-	j _count_bytes_bits_loop
-_count_bytes_bits_quit:
-	ret
 	
 num_to_ascii: #a0-->a0 also use: t0 t1
 	mv t0 a0

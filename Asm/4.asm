@@ -1,6 +1,6 @@
 .include "things.asm"
-
-#main code
+.text
+.globl main
 main:
     call read_num
     mv s0 a0
@@ -226,16 +226,4 @@ _write_num_loop:
 _write_zero:
     writi '0'
 _write_num_end:
-	ret
-
-count_bytes_bits: #a0-->a0, also use t0
-	mv t0 a0
-	li a0 0
-	beq zero t0 _count_bytes_bits_quit
-_count_bytes_bits_loop:
-	srli t0 t0 4
-	beq zero t0 _count_bytes_bits_quit
-	addi a0 a0 4
-	j _count_bytes_bits_loop
-_count_bytes_bits_quit:
 	ret
