@@ -3,7 +3,7 @@ from math import ceil, log2
 
 class DList:
     class Node:
-        def __init__(self, value: Any, prev: Self = None, next: Self = None) -> None:
+        def __init__(self, value: Any, prev: object = None, next: object = None) -> None:
             self.value = value
 
             self._prev = prev
@@ -24,7 +24,7 @@ class DList:
         for value in values:
             self.add(value)
 
-    def __iter__(self) -> Self:
+    def __iter__(self) -> object:
         self.__iter_now = self._root
         return self
 
@@ -68,7 +68,7 @@ class DList:
 
         node._prev, node._next = None, None
 
-    def merge(self, other: Self) -> Self:
+    def merge(self, other: object) -> object:
         if not other._root:
             return self
         if not self._root:
@@ -101,7 +101,7 @@ class FibonacciHeap:
         def degree(self):
             return self._childs.len()
 
-        def merge(self, other: Self):
+        def merge(self, other: object):
             self, other = sorted((self, other), key=lambda node: node.priority)
             self._childs.add(other)
             return self
