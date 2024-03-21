@@ -1,5 +1,5 @@
 # 
-RUNNABLE = <ADD YOUR RUNNABLE HERE>
+RUNNABLE = python3 indiana_sample.py
 
 # Example if you use Python:
 #RUNNABLE = python indiana_sample.py

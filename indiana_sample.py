@@ -1,7 +1,7 @@
 import sys
 
-def solution(data: str) -> int:
-    pass
+from indiana import solution
+
 
 def run():
     if len(sys.argv) <= 2:
