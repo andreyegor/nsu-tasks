@@ -1,9 +1,12 @@
 from typing import Iterable, Any
 from math import ceil, log2
 
+
 class DList:
     class Node:
-        def __init__(self, value: Any, prev: object = None, next: object = None) -> None:
+        def __init__(
+            self, value: Any, prev: object = None, next: object = None
+        ) -> None:
             self.value = value
 
             self._prev = prev
@@ -135,7 +138,9 @@ class FibonacciHeap:
         if self._len == 0:
             self._min = None
             return
-        new_trees = [None for i in range(ceil(log2(self._len))+1)]  # O(logn) возможно не лучшее значение
+        new_trees = [
+            None for i in range(ceil(log2(self._len)) + 1)
+        ]  # O(logn) возможно не лучшее значение
         this_tree = self._trees.root()
         while this_tree:
             if not new_trees[this_tree.value.degree()]:
@@ -156,12 +161,14 @@ class FibonacciHeap:
 def solution(data: str) -> int:
     lines = ([int(q) for q in e.split()] for e in data.splitlines())
     power, q_nodes, q_edges = next(lines)
-    graph = [[float("inf")] * q_nodes for i in range(q_nodes)]
+    graph = [
+        [float("inf")] * i for i in range(1,q_nodes+1)
+    ]  # убрана деградация до квадрата
     graph[0][0] = 0
     for i in range(q_edges):
         node1, node2, weight = next(lines)
+        node1, node2 = sorted((node1, node2), reverse=True)
         graph[node1][node2] = weight
-        graph[node2][node1] = weight
     nodes = [next(lines)[0] for i in range(q_nodes)]
 
     weights = [0] + [float("inf") for i in range(q_nodes - 1)]
@@ -172,8 +179,9 @@ def solution(data: str) -> int:
         if weight > weights[node]:
             continue
         for i in range(q_nodes):
-            if weights[i] > weights[node] + graph[node][i]:
-                weights[i] = weights[node] + graph[node][i]
+            g1, g2 = sorted((node, i), reverse=True)
+            if weights[i] > weights[node] + graph[g1][g2]:
+                weights[i] = weights[node] + graph[g1][g2]
                 queue.insert(weights[i], i)
 
     return nodes[
