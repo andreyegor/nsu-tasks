@@ -12,15 +12,17 @@ read_dec: #-->a0 also use: t0 t1 t2 t3
     li t5 10
 _read_dec_before_loop:
     read
-    li t3 '-'
+    li t3 '-'   
     beq a0 t3 _read_dec_negative
     li t3 0
     j _read_dec_main_loop
+_read_dec_negative:
+    li t3 1 #sign
 _read_dec_loop:
 	read
 _read_dec_main_loop:
     bgeu t0 t2 _read_dec_error
-	beq a0 t1 _read_dec_quit
+	beq a0 t1 _read_dec_end
 	blt a0 t4 _read_dec_error
     sub a0 a0 t4
     bge a0 t5 _read_dec_error
@@ -32,14 +34,13 @@ _read_dec_main_loop:
     add t0 t0 a0
 
 	j _read_dec_loop
+_read_dec_end:
+    beq t3 zero _read_dec_quit
+    sub a0 zero a0
 _read_dec_quit:
-    add a0 t0 t3
-	ret
+    ret
 _read_dec_error:
 	exit 1
-_read_dec_negative:
-    li t3 0x80000000 #sign
-    j _read_dec_loop
 
 write_dec: # a0-> also use t0 t1
     push ra
@@ -49,8 +50,7 @@ write_dec: # a0-> also use t0 t1
     li t2 0x80000000
     and t2 t2 t0
     beq t2 zero _write_dec_stack_loop
-
-    xor t0 t0 t2
+    sub t0 zero t0
     writi '-'
 _write_dec_stack_loop:
 	mv a0 t0
