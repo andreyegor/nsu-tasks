@@ -83,9 +83,8 @@ _add_err:
     exit 1
 _add_sub:
     push ra
-    call sort_2
     li t0 0x10000000
-    sub a1 a1 t0
+    xor a1 a1 t0
     call sub #j sub
     pop ra
     ret
@@ -149,7 +148,7 @@ _sub_end:
     ret
 _sub_add:
     li t0 0x10000000
-    or a1 a1 t0
+    xor a1 a1 t0
     push ra
     call add #j add
     pop ra
