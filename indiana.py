@@ -1,7 +1,5 @@
 from typing import Iterable, Any
-from typing_extensions import Self
 from math import ceil, log2
-
 
 class DList:
     class Node:
