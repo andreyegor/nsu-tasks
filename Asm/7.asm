@@ -35,6 +35,7 @@ _read_dec_main_loop:
 
 	j _read_dec_loop
 _read_dec_end:
+    mv a0 t0
     beq t3 zero _read_dec_quit
     sub a0 zero a0
 _read_dec_quit:
