@@ -1,108 +1,52 @@
 .include "things.asm"
 
-#main_code
+.text
+.globl main
 main:
-    call read_num
-	mv s0 a0
-	call read_num
-	mv s1 a0
-    li s2 0x80000000
-    li s3 32 
+    call read_dec
+	mv s0 a0#first number
+	call read_dec
+	mv s1 a0#second number
+    li s2 0x80000000#iterator
+    li s3 31#iterator too
+    li s4 0xf0000000#out of range
+    li a0 0 #result
+
+    li s5 0
+    and t0 s0 s4
+    and t1 s1 s4
+    xor s5 t0 t1 #sign
+
+	beq t0 zero _main_second_sign
+	sub s0 zero s0
+_main_second_sign:
+	beq t1 zero _main_loop
+	sub s1 zero s1
+
 _main_loop:
-    srl s2 s2 1
+    srli s2 s2 1
     addi s3 s3 -1
-    beq s2 zero _main_end
-    and s4 s2 s1
-    beq s4 zero _main_loop
-    sll s0 s0 s3
+    beq s2 zero _main_continue 
+
+
+    and t0 s2 s1
+    beq t0 zero _main_loop
+
+    sll t1 s0 s3
+
+    srl t2 t1 s3
+    bne s0 t2 _main_err
+    add a0 a0 t1
+
+    and t2 a0 s4
+    bne t2 zero _main_err
+
+    j _main_loop
+_main_continue:
+	beq s5 zero _main_end
+	sub a0 zero a0
 _main_end:
+	call write_dec
     exit 0
-
-
-#functions
-write_num: # a0-> also use t0 t1
-	mv t0 a0
-
-	push ra
-	push t0
-	call count_bytes_bits
-	pop t0
-	pop ra
-
-	mv t1 a0
-_write_num_loop:
-	srl a0 t0 t1
-	
-	push_3 ra t0 t1
-	call num_to_ascii
-	pop_3 ra t0 t1
-
-	write
-	sll a0 a0 t1
-	sub t0 t0 a0
-	beq zero t1 _write_num_end
-	addi t1 t1 -4
-	j _write_num_loop
-_write_num_end:
-	ret
-
-ascii_to_num: #a0-->a0 also use: t0
-	li t0 16
-	addi a0 a0 -48
-	blt a0 zero _ascii_to_num_invalid_exit
-	blt a0 t0 _ascii_to_num_quit
-	
-	addi a0 a0 -7
-	blt a0 t0 _ascii_to_num_quit
-	
-	addi a0 a0 -32
-	blt a0 zero _ascii_to_num_invalid_exit
-	ret
-_ascii_to_num_invalid_exit:
-	exit 1
-_ascii_to_num_quit:
-	ret 
-	
-read_num: #-->a0 also use: t0 t1 t2
-	li t0 0
-	li t1 '\n'
-	li t2 0x10000000
-_read_num_loop:
-	read
-	beq a0 t1 _read_num_quit
-	bge t0 t2 _read_num_error
-	
-	push_4 ra t0 t1 t2
-	call ascii_to_num
-	pop_4 ra t0 t1 t2
-
-	slli t0 t0 4
-	add t0 t0 a0
-	j _read_num_loop
-_read_num_quit:
-	mv a0 t0
-	ret
-_read_num_error:
-	exit 1
-	
-count_bytes_bits: #a0-->a0, also use t0
-	mv t0 a0
-	li a0 0
-	beq zero t0 _count_bytes_bits_quit
-_count_bytes_bits_loop:
-	srli t0 t0 4
-	beq zero t0 _count_bytes_bits_quit
-	addi a0 a0 4
-	j _count_bytes_bits_loop
-_count_bytes_bits_quit:
-	ret
-	
-num_to_ascii: #a0-->a0 also use: t0 t1
-	mv t0 a0
-	li t1 10
-	bge t0 t1 _num_to_ascii_more
-	addi a0 t0 48
-	ret
-_num_to_ascii_more:
-	addi a0 t0 55
-	ret
+_main_err:
+    exit 1
