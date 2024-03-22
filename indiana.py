@@ -161,14 +161,11 @@ class FibonacciHeap:
 def solution(data: str) -> int:
     lines = ([int(q) for q in e.split()] for e in data.splitlines())
     power, q_nodes, q_edges = next(lines)
-    graph = [
-        [float("inf")] * i for i in range(1,q_nodes+1)
-    ]  # убрана деградация до квадрата
-    graph[0][0] = 0
+    graph = [[(i, 0)] for i in range(q_nodes)]  # (node, weight)
     for i in range(q_edges):
         node1, node2, weight = next(lines)
-        node1, node2 = sorted((node1, node2), reverse=True)
-        graph[node1][node2] = weight
+        graph[node1].append((node2, weight))
+        graph[node2].append((node1, weight))
     nodes = [next(lines)[0] for i in range(q_nodes)]
 
     weights = [0] + [float("inf") for i in range(q_nodes - 1)]
@@ -178,10 +175,9 @@ def solution(data: str) -> int:
         weight, node = queue.extract()
         if weight > weights[node]:
             continue
-        for i in range(q_nodes):
-            g1, g2 = sorted((node, i), reverse=True)
-            if weights[i] > weights[node] + graph[g1][g2]:
-                weights[i] = weights[node] + graph[g1][g2]
+        for i, weight in graph[node]:
+            if weights[i] > weights[node] + weight:
+                weights[i] = weights[node] + weight
                 queue.insert(weights[i], i)
 
     return nodes[
