@@ -11,3 +11,10 @@
 * Мини-задача 17 [Reverse Linked List II](https://leetcode.com/problems/reverse-linked-list-ii/submissions/1202315700)
 * Мини-задача 19 [Merge k Sorted Lists](https://leetcode.com/problems/merge-k-sorted-lists/submissions/1203680203)
 * Мини-задача 20 [Min Stack](https://leetcode.com/problems/min-stack/submissions/1203125669)
+* Мини-задача 22 [Serialize and Deserialize Binary Tree](https://leetcode.com/problems/serialize-and-deserialize-binary-tree/submissions/1213447133)
+* Мини-задача 23 [Binary Tree Right Side View](https://leetcode.com/problems/binary-tree-right-side-view/submissions/1214134929)
+* Мини-задача 24 [Validate Binary Search Tree](https://leetcode.com/problems/validate-binary-search-tree/submissions/1214144792)
+* Мини-задача 25 [Trim a Binary Search Tree](https://leetcode.com/problems/trim-a-binary-search-tree/submissions/1214155390)
+
+
+
