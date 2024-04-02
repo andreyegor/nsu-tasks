@@ -40,6 +40,16 @@ public:
         right = right_in;
     }
 
+    Binary(const Binary& other){
+        this->left = other.left->copy();
+        this->right = other.right->copy();
+    }
+
+    Binary(Binary&& other){
+        this->left = other.left;
+        this->right = other.right;
+    }
+
 
     ~Binary() {
         delete left;
