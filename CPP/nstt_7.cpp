@@ -40,12 +40,12 @@ public:
         right = right_in;
     }
 
-    Binary(const Binary& other){
+    Binary(const Binary &other) {
         this->left = other.left->copy();
         this->right = other.right->copy();
     }
 
-    Binary(Binary&& other){
+    Binary(Binary &&other) {
         this->left = other.left;
         this->right = other.right;
     }
@@ -74,11 +74,11 @@ public:
         exp = exp_in;
     }
 
-    Unary(const Unary& other){
+    Unary(const Unary &other) {
         this->exp = other.exp->copy();
     }
 
-    Unary(Unary&& other){
+    Unary(Unary &&other) {
         this->exp = other.exp;
     }
 
@@ -101,6 +101,18 @@ class Add : public Binary {
 public:
     using Binary::Binary;//https://en.cppreference.com/w/cpp/language/using_declaration
 
+    Add &operator=(const Add &other) {
+        left = other.left->copy();
+        right = other.right->copy();
+        return *this;
+    }
+
+    Add &operator=(Add &&other) {
+        std::swap(left, other.left);
+        std::swap(right, other.right);
+        return *this;
+    }
+
     explicit operator std::string() {
         return to_str_sign(" + ", priority());
     }
@@ -121,6 +133,18 @@ public:
 class Sub : public Binary {
 public:
     using Binary::Binary;
+
+    Sub &operator=(const Sub &other) {
+        left = other.left->copy();
+        right = other.right->copy();
+        return *this;
+    }
+
+    Sub &operator=(Sub &&other) {
+        std::swap(left, other.left);
+        std::swap(right, other.right);
+        return *this;
+    }
 
     explicit operator std::string() {
         return to_str_sign(" - ", priority());
@@ -144,6 +168,18 @@ class Mult : public Binary {
 public:
     using Binary::Binary;
 
+    Mult &operator=(const Mult &other) {
+        left = other.left->copy();
+        right = other.right->copy();
+        return *this;
+    }
+
+    Mult &operator=(Mult &&other) {
+        std::swap(left, other.left);
+        std::swap(right, other.right);
+        return *this;
+    }
+
     explicit operator std::string() {
         return to_str_sign("*", priority());
     }
@@ -164,6 +200,18 @@ public:
 class Div : public Binary {
 public:
     using Binary::Binary;
+
+    Div &operator=(const Div &other) {
+        left = other.left->copy();
+        right = other.right->copy();
+        return *this;
+    }
+
+    Div &operator=(Div &&other) {
+        std::swap(left, other.left);
+        std::swap(right, other.right);
+        return *this;
+    }
 
     explicit operator std::string() {
         return to_str_sign("/", priority());
@@ -186,6 +234,16 @@ public:
 class Exponent : public Unary {
 public:
     using Unary::Unary;
+
+    Exponent &operator=(const Exponent &other) {
+        exp = other.exp->copy();
+        return *this;
+    }
+
+    Exponent &operator=(Exponent &&other) {
+        std::swap(exp, other.exp);
+        return *this;
+    }
 
     explicit operator std::string() {
         return "e^" + to_string(exp, priority());//highest priority, no brackets needed
@@ -214,6 +272,16 @@ public:
         val = val_in;
     }
 
+    Val(const Val &other) {
+        val = other.val;
+    }
+
+    Val &operator=(const Val &other) {
+        val = other.val;
+        return *this;
+    }
+
+
     explicit operator std::string() {
         return std::to_string(val);
     }
@@ -237,6 +305,16 @@ class Var : public Expression {
 public:
     Var(const std::string var_in) {
         var = var_in;
+    }
+
+
+    Var(const Var &other) {
+        var = other.var;
+    }
+
+    Var &operator=(const Var &other) {
+        var = other.var;
+        return *this;
     }
 
     explicit operator std::string() {
@@ -279,8 +357,8 @@ TEST(lonley_test_suite, test_from_presentation) {
 TEST(lonley_test_suite, exponent_division_test) {
     Expression *e = new Exponent(new Div(new Var("x"), new Sub(new Val(2), new Var("x"))));
     Expression *q = e->diff("x");
-    std::cout<<(std::string) *q;
-    EXPECT_TRUE((std::string) *q == "((1*(2 - x) - x*(0 - 1))/((2 - x)*(2 - x)))*e^(x/(2 - x))");//i checked, seems correct
+    EXPECT_TRUE(
+            (std::string) *q == "((1*(2 - x) - x*(0 - 1))/((2 - x)*(2 - x)))*e^(x/(2 - x))");//i checked, seems correct
 
     delete e;
     delete q;
