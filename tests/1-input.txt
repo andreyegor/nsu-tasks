@@ -1,0 +1,12 @@
+ADD BOUNTY Boba Fett, 5000
+ADD BOUNTY Boba Fett, 2000
+ADD BOUNTY C-3PO, 8000
+ADD BOUNTY Luke Skywalker, 2000
+RANK Boba Fett
+COMPLETED Luke Skywalker
+BOUNTY Luke Skywalker
+ADD BOUNTY Han Solo, 20000
+ADD BOUNTY Boba Fett, 2000
+BOUNTY Boba Fett
+COMPLETED Han Solo
+RANK Boba Fett

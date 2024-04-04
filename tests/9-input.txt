@@ -1,0 +1,8 @@
+BOUNTY Boba Fett
+ADD BOUNTY Boba Fett, 5000
+BOUNTY Boba Fett
+COMPLETED Boba Fett
+BOUNTY Boba Fett
+BOUNTY Clone0
+BOUNTY Clone1
+BOUNTY Clone2
