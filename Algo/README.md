@@ -15,6 +15,4 @@
 * Мини-задача 23 [Binary Tree Right Side View](https://leetcode.com/problems/binary-tree-right-side-view/submissions/1214134929)
 * Мини-задача 24 [Validate Binary Search Tree](https://leetcode.com/problems/validate-binary-search-tree/submissions/1214144792)
 * Мини-задача 25 [Trim a Binary Search Tree](https://leetcode.com/problems/trim-a-binary-search-tree/submissions/1214155390)
-
-
-
+* Мини-задача 26 [Balance a Binary Search Tree](https://leetcode.com/problems/balance-a-binary-search-tree/submissions/1222920914)
