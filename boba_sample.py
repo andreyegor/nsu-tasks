@@ -1,8 +1,8 @@
 import sys
+from boba import solution
 
 
-def solution(data: str) -> str:
-    pass
+
 
 
 def run():
@@ -16,6 +16,5 @@ def run():
             data = inp.read()
             result = solution(data)
             out.write(result)
-
 
 run()
