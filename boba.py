@@ -24,15 +24,15 @@ class Tree:
         if key:
             self.insert(key, val)
 
-    def __len__(self) -> int:  # TODO а корректно?
-        return 1 + self._root._height if self._root else 0
+    def __len__(self) -> int:
+        return self._root._height if self._root else 0
 
     def __iter__(self):
         yield from self.__dfs(self._root)
 
     def insert(self, key, val=None) -> None:
         if not self._root:
-            self._root = self.Node(key, val)
+            self._root = self.Node(key, val, height=1)
             return
 
         new = self._root
@@ -40,17 +40,17 @@ class Tree:
             this = new
             if new.key < key:
                 if not new._right:
-                    new._right = self.Node(key, val, this)
+                    new._right = self.Node(key, val, this, height=1)
                     break
                 new = new._right
             elif new.key > key:
                 if not new._left:
-                    new._left = self.Node(key, val, this)
+                    new._left = self.Node(key, val, this, height=1)
                     break
                 new = new._left
             else:
                 raise AttributeError("Same key object alrey exists")
-        self._root = self.__balance(new)
+        self._root = self.__balance(new, False)
 
     def extract(self, key) -> Any:
         return self.__extract_node(self._peek(key)).val
@@ -64,7 +64,9 @@ class Tree:
     def __extract_node(self, extractable: Node) -> Node:
         if extractable._left and extractable._right:
             swap = self.__local_min(extractable._right)
-            self.__swap_nodes(extractable, swap)
+            swap.key, extractable.key = extractable.key, swap.key
+            swap.val, extractable.val = extractable.val, swap.val
+            swap, extractable = extractable, swap
             balance_node = extractable._parent
             self.__kill_child(extractable)
             self.__balance(balance_node)
@@ -120,24 +122,6 @@ class Tree:
             alive_grandson._parent = child._parent
         child._parent, child._left, child._right = None, None, None
 
-    def __swap_nodes(self, first: Node, second: Node) -> None:
-        first._parent, second._parent = second._parent, first._parent
-        first._left, second._left = second._left, first._left
-        first._right, second._right = second._right, first._right
-        first._height, second._height = second._height, first._height
-
-        if first._parent:
-            if first._parent._left == second:
-                first._parent._left = first
-            else:
-                first._parent._right = first
-
-        if second._parent:
-            if second._parent._left == first:
-                second._parent._left = second
-            else:
-                second._parent._right = second
-
     def __balance(self, node: Node, b_rotate=True) -> Node:
         while True:
             self.__update_height(node)
@@ -156,6 +140,7 @@ class Tree:
                 node = node._parent
                 continue
             break
+        self._root = node
         return node
 
     def __update_height(self, *nodes: Node) -> None:
@@ -179,27 +164,39 @@ class Tree:
             root._right._parent = root
         self.__update_height(root, new_root)
 
+        if not new_root._parent:
+            return new_root
+
+        if new_root._parent._left == root:
+            new_root._parent._left = new_root
+        else:
+            new_root._parent._right = new_root
+
         return new_root
 
-    def __sr_rotation(
-        self, root: Node
-    ) -> Node:  # TODO перепроверить малые повороты, но вроде всё ок
+    def __sr_rotation(self, root: Node) -> Node:
         new_root = root._left
         root._parent, new_root._parent = new_root, root._parent
-        root._left, new_root._right = new_root._right, root
         root._left, new_root._right = new_root._right, root
         if root._left:
             root._left._parent = root
         self.__update_height(root, new_root)
 
+        if not new_root._parent:
+            self._root = new_root
+        elif new_root._parent._left == root:
+            new_root._parent._left = new_root
+        else:
+            new_root._parent._right = new_root
+
         return new_root
 
     def __bl_rotation(self, root: Node) -> Node:
-        root._right = self.__sr_rotation(root._right)
+        self.__sr_rotation(root._right)
         return self.__sl_rotation(root)
 
     def __br_rotation(self, root: Node) -> Node:
-        root._left = self.__sl_rotation(root._left)
+        self.__sl_rotation(root._left)
         return self.__sr_rotation(root)
 
 
@@ -247,16 +244,23 @@ class RepetableTree(Tree):
         return self.__top(self._root, n)
 
     def rank(self, key):
-        return self.__rank(super()._peek(key), key)
+        return self.__rank(self._root, key) + 1
 
     def __range(self, mn: int, mx: int, root) -> List:
-        if not root or mn > root.key or mx < root.key:
+        if not root:
             return []
-        return (
-            self.__range(mn, mx, root._right)
-            + [[e[0], root.key] for e in list(root.val)]
-            + self.__range(mn, mx, root._left)
-        )
+
+        if root.key <= mx and root.key >= mn:
+            return (
+                self.__range(mn, mx, root._right)
+                + [[e[0], root.key] for e in list(root.val)]
+                + self.__range(mn, mx, root._left)
+            )
+        elif root.key <= mx:
+            return self.__range(mn, mx, root._right)
+        elif root.key >= mn:
+            return self.__range(mn, mx, root._left)
+        return []
 
     def __top(self, root, n) -> List:
         if not root or n <= 0:
@@ -272,11 +276,15 @@ class RepetableTree(Tree):
         return out
 
     def __rank(self, root, mn) -> int:
-        if not root or root.key < mn:
+        if not root:
             return 0
-        return (
-            len(root.val) + self.__rank(root._left, mn) + self.__rank(root._right, mn)
-        )
+        if root.key > mn:
+            return (
+                len(root.val)
+                + self.__rank(root._left, mn)
+                + self.__rank(root._right, mn)
+            )
+        return self.__rank(root._right, mn)
 
 
 class DataBase:
@@ -307,7 +315,10 @@ class DataBase:
             return 0
 
     def rank(self, name: str) -> int:
-        return self.__bounty_tree.rank(self.__name_tree.peek(name))
+        try:
+            return self.__bounty_tree.rank(self.__name_tree.peek(name))
+        except AttributeError:
+            return -1
 
     def top(self, n: str) -> List[tuple[str, int]]:
         return self.__bounty_tree.top(n)
@@ -316,7 +327,7 @@ class DataBase:
         return self.__bounty_tree.range(frm, to)
 
 
-class uuuaaa:
+class ProtocolDroid:  #:)
     __roger_that = "Roger that"
 
     def __init__(self):
@@ -379,23 +390,21 @@ class uuuaaa:
 
 def solution(data: str) -> str:
     out = ""
-    памагите = uuuaaa()
+    IG_88B = ProtocolDroid()  #:)
     for line in data.splitlines():
         try:
-            out += памагите.ask(line) + "\n"
+            out += IG_88B.ask(line) + "\n"
         except NotImplementedError:
             out += "Beep-bee-bee-boop-bee-doo-weep\n"
-    return out.removesuffix("\n")
-
-
-class tmp:
-    def __init__(self, val):
-        self.val = val
+    return out
 
 
 if __name__ == "__main__":
-    with open("tests/2-input.txt", "r") as inp:
-        data = inp.read()
-        result = solution(data)
-        print(result)
+    test_no = 6
+    with open(f"tests/{test_no}-input.txt", "r") as inp:
+        with open(f"tests/{test_no}-actual.txt", "w") as out:
+            data = inp.read()
+            result = solution(data)
+            print(result)
+            out.write(result)
     exit()
