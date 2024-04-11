@@ -5,8 +5,8 @@ class BHeap:
     class Node:
         def __init__(
             self,
-            priority: int,
-            value: int,
+            priority: int = 4242,
+            value: int = 4242,
             parent: Self = None,
             childs: list[Self] = None,
         ) -> None:
@@ -24,14 +24,43 @@ class BHeap:
         def add_child(self, new_child: Self) -> None:
             self._childs.append(new_child)
 
-        def merge(self, other: Self) -> Self:
-            self, other = sorted((self, other), key=lambda node: node.priority)
-            self._childs.append(other)
-            other._parent = self
-            return self
+        def merge(self, other_childs: Self) -> None:
+            to, frm = (self._childs, other_childs.copy())
+            min(to, frm, key=len).extend([None] * (abs(len(to) - len(frm))))
+            carry = None
+            for i, (f, t) in enumerate(zip(frm, to)):
+                if f and t:
+                    to[i] = carry
+                    carry = self.__merge_nodes(t, f)
+                elif carry and ((e := f) or (e := t)):
+                    to[i] = None
+                    carry = self.__merge_nodes(carry, e)
+                elif carry:
+                    to[i] = carry
+                    carry = None
+                elif f:
+                    to[i] = f
+                # elif t: уже лежит
+            if carry:
+                to.append(carry)
+            # self._childs = to
+        def __merge_nodes(self, first, second):
+            to, frm = sorted((first, second), key= lambda x: x.priority)
+            to.merge(self.__node_to_childs(frm))
+            frm._parent = to
+            return to
+        
+        def __node_to_childs(self, node: Self):
+            out = [None] * (node.size() + 1)
+            out[-1] = node
+            return out
 
     def __init__(self, threes: list[Node] = None) -> None:
-        self.__trees = threes if threes else []
+        self.__root_node = self.Node(4242, 4242, None, threes)
+
+    @property
+    def __trees(self):
+        return self.__root_node._childs
 
     def __sift_up(self, node: Node) -> None:
         node_to_swap = None
@@ -79,6 +108,9 @@ class BHeap:
         if self.__trees[-1] == None:
             del self.__trees[-1]
 
+        for e in out._childs:
+            if e:
+                e._parent = None
         if out._childs:
             self.merge(BHeap(out._childs))
 
@@ -88,7 +120,7 @@ class BHeap:
 
     def delete(self, node: Node) -> None:
         self.decrease_priority(node, -float("inf"))
-        self.extract_min()
+        print("deleted", self.extract_min())
 
     def insert(self, priority: int, value: int) -> None:
         self.merge(BHeap([self.Node(priority, value)]))
@@ -97,26 +129,8 @@ class BHeap:
         node.priority = new_priority
         self.__sift_up(node)
 
-    def merge(self, other: Self) -> None:
-        frm, to = sorted((list(self.__trees), list(other.__trees.copy())), key=len)
-        frm.extend([None] * (len(to) - len(frm)))
-        carry = None
-        for i, (f, t) in enumerate(zip(frm, to)):
-            if f and t:
-                to[i] = carry
-                carry = t.merge(f)
-            elif carry and ((e := f) or (e := t)):
-                to[i] = None
-                carry.merge(e)
-            elif carry:
-                to[i] = carry
-                carry = None
-            elif f:
-                to[i] = f
-            # elif t: уже лежит
-        if carry:
-            to.append(carry)
-        self.__trees = to
+    def merge(self, other):
+        self.__root_node.merge(other.__trees)
 
 
 heap = BHeap()
@@ -124,7 +138,10 @@ heap.insert(10, 1)
 heap.insert(1, 2)
 node = heap.peek_min()
 heap.insert(-1, 3)
+heap.insert(999999, 42)
 heap.insert(5, 4)
 heap.delete(node)
+print(heap.extract_min())
+print(heap.extract_min())
 print(heap.extract_min())
 print(heap.extract_min())
