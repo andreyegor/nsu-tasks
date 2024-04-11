@@ -16,3 +16,4 @@
 * Мини-задача 24 [Validate Binary Search Tree](https://leetcode.com/problems/validate-binary-search-tree/submissions/1214144792)
 * Мини-задача 25 [Trim a Binary Search Tree](https://leetcode.com/problems/trim-a-binary-search-tree/submissions/1214155390)
 * Мини-задача 26 [Balance a Binary Search Tree](https://leetcode.com/problems/balance-a-binary-search-tree/submissions/1222920914)
+* Мини-задача 27 [Maximum Frequency Stack](https://leetcode.com/problems/maximum-frequency-stack/submissions/1229444108)
