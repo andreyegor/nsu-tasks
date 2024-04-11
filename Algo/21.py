@@ -31,25 +31,42 @@ class BHeap:
             return self
 
     def __init__(self, threes: list[Node] = None) -> None:
-        self.__threes = threes if threes else []
+        self.__trees = threes if threes else []
 
     def __sift_up(self, node: Node) -> None:
+        node_to_swap = None
         while node._parent and node._parent.priority > node.priority:
-            node._parent._childs, node._childs = (
+            node_to_swap = node._parent
+            for i, e in enumerate(node_to_swap._childs):
+                if node == e:
+                    node_to_swap._childs[i] = node_to_swap
+                    break
+            for i, e in enumerate(
+                node_to_swap._parent._childs if node_to_swap._parent else []
+            ):
+                if node_to_swap == e:
+                    node_to_swap._parent._childs[i] = node
+                    break
+            node_to_swap._childs, node._childs = (
                 node._childs,
-                node._parent._childs,
+                node_to_swap._childs,
             )
-            node._parent, node._parent._parent = (
-                node._parent._parent,
-                node._parent,
+            node._parent, node_to_swap._parent = (
+                node_to_swap._parent,
+                node,
             )
+        if not node_to_swap:
+            return
+        for i, e in enumerate(self.__trees):
+            if e == node_to_swap:
+                self.__trees[i] = node
 
     def empty(self):
-        return not bool(self.__threes)
+        return not bool(self.__trees)
 
     def peek_min(self) -> Node:
         out = min(
-            self.__threes,
+            self.__trees,
             key=lambda three: three.priority if three else float("inf"),
         )
         if not out:
@@ -58,9 +75,9 @@ class BHeap:
 
     def extract_min(self) -> Node:
         out = self.peek_min()
-        self.__threes[out.size()] = None
-        if self.__threes[-1] == None:
-            del self.__threes[-1]
+        self.__trees[out.size()] = None
+        if self.__trees[-1] == None:
+            del self.__trees[-1]
 
         if out._childs:
             self.merge(BHeap(out._childs))
@@ -81,10 +98,11 @@ class BHeap:
         self.__sift_up(node)
 
     def merge(self, other: Self) -> None:
-        frm, to = sorted((self.__threes, other.__threes), key=len)
+        frm, to = sorted((list(self.__trees), list(other.__trees.copy())), key=len)
+        frm.extend([None] * (len(to) - len(frm)))
         carry = None
         for i, (f, t) in enumerate(zip(frm, to)):
-            if f and t:  # проверить объеденение if
+            if f and t:
                 to[i] = carry
                 carry = t.merge(f)
             elif carry and ((e := f) or (e := t)):
@@ -98,14 +116,15 @@ class BHeap:
             # elif t: уже лежит
         if carry:
             to.append(carry)
-        self.__threes = to
+        self.__trees = to
 
 
 heap = BHeap()
 heap.insert(10, 1)
-heap.insert(1, 1)
+heap.insert(1, 2)
 node = heap.peek_min()
-heap.insert(-1, 1)
+heap.insert(-1, 3)
+heap.insert(5, 4)
 heap.delete(node)
 print(heap.extract_min())
 print(heap.extract_min())
