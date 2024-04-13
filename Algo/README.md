@@ -6,7 +6,7 @@
 * Мини-задача 7 ([2 балла](https://leetcode.com/problems/sort-an-array/submissions/1175117954)) [Sort an Array](https://leetcode.com/problems/sort-an-array/submissions/1187458576)
 * Мини-задача 8 ([O(n*log(n))](https://leetcode.com/problems/global-and-local-inversions/submissions/1175344619)) [Global and Local Inversions](https://leetcode.com/problems/global-and-local-inversions/submissions/1175667387)
 * Мини-задача 11 [Sort Colors](https://leetcode.com/problems/sort-colors/submissions/1186601067)
-* Мини-задача 12 Sort an Array [Ломуто](https://leetcode.com/problems/sort-an-array/submissions/1186962481) [Хоара](https://leetcode.com/problems/sort-an-array/submissions/1186963385)
+* Мини-задача 12 Sort an Array [Ломуто](https://leetcode.com/problems/sort-an-array/submissions/1186962481)/[Хоара](https://leetcode.com/problems/sort-an-array/submissions/1186963385)
 * Мини-задача 16 [Linked List Cycle II](https://leetcode.com/problems/linked-list-cycle-ii/submissions/1194750893)
 * Мини-задача 17 [Reverse Linked List II](https://leetcode.com/problems/reverse-linked-list-ii/submissions/1202315700)
 * Мини-задача 19 [Merge k Sorted Lists](https://leetcode.com/problems/merge-k-sorted-lists/submissions/1203680203)
