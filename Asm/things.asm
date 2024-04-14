@@ -230,3 +230,14 @@ _count_bytes_bits_loop:
 	j _count_bytes_bits_loop
 _count_bytes_bits_quit:
 	ret
+
+count_bytes:
+	mv t0 a0
+	li a0 0
+	beq zero t0 _count_bytes_quit
+_count_bytes_loop:
+	srli t0 t0 1
+	addi a0 a0 1
+	bne zero t0 _count_bytes_loop
+_count_bytes_quit:
+	ret
