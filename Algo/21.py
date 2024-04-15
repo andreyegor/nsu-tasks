@@ -1,3 +1,4 @@
+from random import shuffle
 from typing import Self
 
 
@@ -44,12 +45,13 @@ class BHeap:
             if carry:
                 to.append(carry)
             # self._childs = to
+
         def __merge_nodes(self, first, second):
-            to, frm = sorted((first, second), key= lambda x: x.priority)
+            to, frm = sorted((first, second), key=lambda x: x.priority)
             to.merge(self.__node_to_childs(frm))
             frm._parent = to
             return to
-        
+
         def __node_to_childs(self, node: Self):
             out = [None] * (node.size() + 1)
             out[-1] = node
@@ -120,7 +122,7 @@ class BHeap:
 
     def delete(self, node: Node) -> None:
         self.decrease_priority(node, -float("inf"))
-        print("deleted", self.extract_min())
+        self.extract_min()
 
     def insert(self, priority: int, value: int) -> None:
         self.merge(BHeap([self.Node(priority, value)]))
@@ -141,7 +143,18 @@ heap.insert(-1, 3)
 heap.insert(999999, 42)
 heap.insert(5, 4)
 heap.delete(node)
-print(heap.extract_min())
-print(heap.extract_min())
-print(heap.extract_min())
-print(heap.extract_min())
+
+assert heap.extract_min().priority == -1
+assert heap.extract_min().priority == 5
+assert heap.extract_min().priority == 10
+assert heap.extract_min().priority == 999999
+
+priorties = list(range(1, 16))
+shuffle(priorties)
+for i in priorties:
+    heap.insert(i, 55)
+heap.insert(0, 55)
+
+assert heap._BHeap__trees[0:4] == [None] * 4 and heap._BHeap__trees[4] != None
+for i in range(16):
+    assert heap.extract_min().priority == i
