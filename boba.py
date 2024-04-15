@@ -1,4 +1,4 @@
-from typing import Generator, List, Callable, Any, Union
+from typing import Generator, List, Callable, Any, Literal, Union
 
 
 class Tree:
@@ -156,40 +156,37 @@ class Tree:
             node._left._height if node._left else 0
         )
 
-    def __sl_rotation(self, root: Node) -> Node:
-        new_root = root._right
-        root._parent, new_root._parent = new_root, root._parent
-        root._right, new_root._left = new_root._left, root
-        if root._right:
-            root._right._parent = root
-        self.__update_height(root, new_root)
-
-        if not new_root._parent:
-            return new_root
-
-        if new_root._parent._left == root:
-            new_root._parent._left = new_root
+    def __rotation(self, root, type) -> Node:
+        if type == "sl":
+            first, second = "_left", "_right"
+        elif type == "sr":
+            first, second = "_right", "_left"
         else:
-            new_root._parent._right = new_root
-
-        return new_root
-
-    def __sr_rotation(self, root: Node) -> Node:
-        new_root = root._left
+            raise AttributeError("""Attribute 'type' can be "sl" or "sr" only""")
+        new_root = root.__getattribute__(second)
         root._parent, new_root._parent = new_root, root._parent
-        root._left, new_root._right = new_root._right, root
-        if root._left:
-            root._left._parent = root
+
+        root.__setattr__(second, new_root.__getattribute__(first))
+        new_root.__setattr__(first, root)
+
+        if root.__getattribute__(second):
+            root.__getattribute__(second)._parent = root
         self.__update_height(root, new_root)
 
         if not new_root._parent:
             self._root = new_root
-        elif new_root._parent._left == root:
-            new_root._parent._left = new_root
+        elif new_root._parent.__getattribute__(first) == root:
+            new_root._parent.__setattr__(first, new_root)
         else:
-            new_root._parent._right = new_root
+            new_root._parent.__setattr__(second, new_root)
 
         return new_root
+
+    def __sl_rotation(self, root: Node) -> Node:
+        return self.__rotation(root, "sl")
+
+    def __sr_rotation(self, root: Node) -> Node:
+        return self.__rotation(root, "sr")
 
     def __bl_rotation(self, root: Node) -> Node:
         self.__sr_rotation(root._right)
