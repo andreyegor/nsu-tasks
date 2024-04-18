@@ -1,4 +1,5 @@
 .text
+# base
 .macro syscall %n
 	li a7, %n
 	ecall
@@ -11,6 +12,10 @@
 .macro write
 	syscall 11
 .end_macro 
+
+.macro write_str#null terminated string->None
+	syscall 4
+.end_macro
 
 .macro writi %c
 	li a0 %c
@@ -28,6 +33,7 @@
 	xor %r1, %r1, %r2
 .end_macro
 
+# stack
 .macro push %r1
 	addi sp, sp, -4
 	sw %r1, 0(sp)
@@ -98,7 +104,7 @@
 	addi sp, sp, 20
 .end_macro
 
-#functions
+#read/write functions
 read_dec: #-->a0 also use: t0 t1 t3 t4
 	li t0 0
 	li t1 '\n'
@@ -175,6 +181,7 @@ _write_dec_end:
     pop ra
 	ret
 
+#math
 div10: #a0->a0 also use
     li t1 0x80000000
     and t1 t1 a0 #sign
@@ -241,3 +248,97 @@ _count_bytes_loop:
 	bne zero t0 _count_bytes_loop
 _count_bytes_quit:
 	ret
+
+#allocate
+.macro sbrk #bytes->adress
+    syscall 9
+.end_macro
+
+
+#files
+.macro openf#null terminated file name, mode(0-ro/1-wo/9-wa)->file descriptor/-1
+	syscall 1024
+.end_macro
+
+.macro closef
+	syscall 57
+.end_macro
+
+.macro lseek #file descriptor, offset, begin/now/end(0/1/2)->selected position/-1
+	syscall 62
+.end_macro
+
+.macro readf
+	syscall 63
+.end_macro
+
+.macro writef
+	syscall 64
+.end_macro
+
+
+fopen:#a0 - null terminated file name, a1 - mode(0-ro/1-wo/9-wa)->file descriptor
+	li t0 -1
+	openf
+	beq a0 t0 _fopen_err
+	ret
+_fopen_err:
+	exit 1
+
+fread: # file_descriptor, buffer adress, maximum length->None
+	li t0, -1
+	readf
+	beq t0, a0, _fread_err
+	ret
+_fread_err:
+    exit 1
+
+flength:#file descriptor->length
+	li t0 -1
+	mv t1 a0
+
+	li a1 0
+
+	li a2 1
+	lseek
+	beq a0 t0 _flength_err
+	mv t2 a0 # now
+
+	mv a0 t1
+	li a2 2
+	lseek
+	beq a0 t0 _flength_err
+
+	swap a0 t1 #swap output and f desc
+	mv a1 t2
+	li a2 0
+	lseek
+	beq a0 t0 _flength_err
+
+	mv a0 t1
+	ret
+
+_flength_err:
+	exit 1
+
+
+fload:#file_descriptor->adress
+	push_2 ra a0
+	call flength
+	mv t1 a0#?
+	pop_2 ra t0
+
+
+	sbrk
+	push_2 ra, a0
+	mv a1 a0
+	mv a0 t0
+	mv a2 t1
+	call fread
+	pop_2 ra a0
+	ret
+	
+
+_fload_err:
+
+
