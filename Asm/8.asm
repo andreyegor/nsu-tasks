@@ -18,9 +18,11 @@ main:
 	beq s3 t0 _main_and
     li t0 '|'
 	beq s3 t0 _main_or
+    li t0 '*'
+    beq s3 t0 _main_mul
     exit 1
 _main_add:
-    add s0 s1 s2 #add overflow check
+    add s0 s1 s2
 
     li t0 0x80000000
     xor t1 s1 s2
@@ -47,6 +49,14 @@ _main_and:
     j _main_continue
 _main_or:
     or s0 s1 s2
+    j _main_continue
+_main_mul:
+    mv a0 s1
+    mv a1 s2
+    push ra
+    call mul
+    pop ra
+    mv s0 a0
     j _main_continue
 _main_positive_overflow_check:
     blt s0 zero _main_error

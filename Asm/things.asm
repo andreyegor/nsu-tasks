@@ -104,6 +104,84 @@
 	addi sp, sp, 20
 .end_macro
 
+#ascii functions
+write_num: # a0-> also use t0 t1
+	mv t0 a0
+
+	push ra
+	push t0
+	call count_bytes_bits
+	pop t0
+	pop ra
+
+	mv t1 a0
+_write_num_loop:
+	srl a0 t0 t1
+	
+	push_3 ra t0 t1
+	call num_to_ascii
+	pop_3 ra t0 t1
+
+	write
+	sll a0 a0 t1
+	sub t0 t0 a0
+	beq zero t1 _write_num_end
+	addi t1 t1 -4
+	j _write_num_loop
+_write_num_end:
+	ret
+
+
+ascii_to_num: #a0-->a0 also use: t0
+	li t0 16
+	addi a0 a0 -48
+	blt a0 zero _ascii_to_num_invalid_exit
+	blt a0 t0 _ascii_to_num_quit
+	
+	addi a0 a0 -7
+	blt a0 t0 _ascii_to_num_quit
+	
+	addi a0 a0 -32
+	blt a0 zero _ascii_to_num_invalid_exit
+	ret
+_ascii_to_num_invalid_exit:
+	exit 1
+_ascii_to_num_quit:
+	ret 
+	
+
+read_num: #-->a0 also use: t0 t1 t2
+	li t0 0
+	li t1 '\n'
+	li t2 0x10000000
+_read_num_loop:
+	read
+	beq a0 t1 _read_num_quit
+	bge t0 t2 _read_num_error
+	
+	push_4 ra t0 t1 t2
+	call ascii_to_num
+	pop_4 ra t0 t1 t2
+
+	slli t0 t0 4
+	add t0 t0 a0
+	j _read_num_loop
+_read_num_quit:
+	mv a0 t0
+	ret
+_read_num_error:
+	exit 1
+	
+num_to_ascii: #a0-->a0 also use: t0 t1
+	mv t0 a0
+	li t1 10
+	bge t0 t1 _num_to_ascii_more
+	addi a0 t0 48
+	ret
+_num_to_ascii_more:
+	addi a0 t0 55
+	ret
+	
 #read/write functions
 read_dec: #-->a0 also use: t0 t1 t3 t4
 	li t0 0
@@ -182,6 +260,50 @@ _write_dec_end:
 	ret
 
 #math
+mul:
+    mv t2 a0
+    li t3 0x80000000#iterator
+    li t4 31#iterator too
+    li t5 0xf0000000#out of range
+    li a0 0 #result
+
+    li t6 0
+    and t0 t2 t5
+    and t1 a1 t5
+    xor t6 t0 t1 #sign
+
+	beq t0 zero _mul_second_sign
+	sub t2 zero t2
+_mul_second_sign:
+	beq t1 zero _mul_loop
+	sub a1 zero a1
+_mul_loop:
+    srli t3 t3 1
+    addi t4 t4 -1
+    beq t3 zero _mul_continue 
+
+
+    and t0 t3 a1
+    beq t0 zero _mul_loop
+
+    sll t0 t2 t4
+
+    srl t1 t0 t4
+    bne t2 t1 _mul_err
+    add a0 a0 t0
+
+    and t0 a0 t5
+    bne t0 zero _mul_err
+
+    j _mul_loop
+_mul_continue:
+	beq t6 zero _mul_quit
+	sub a0 zero a0
+_mul_quit:
+    ret
+_mul_err:
+    exit 1
+
 div10: #a0->a0 also use
     li t1 0x80000000
     and t1 t1 a0 #sign
@@ -217,11 +339,9 @@ _mod_10_continue:
     mv t0 a0
     push_2 ra t0
     call div10
-    pop_2 ra t0
-
-    slli t1 a0 1 #multiple 10
-    slli a0 a0 3
-    add a0 a0 t1
+	li a1 10
+	call mul
+	pop_2 ra t0
 
     sub a0 t0 a0
     ret
@@ -325,7 +445,7 @@ _flength_err:
 fload:#file_descriptor->adress
 	push_2 ra a0
 	call flength
-	mv t1 a0#?
+	addi t1 a0 1 #\0
 	pop_2 ra t0
 
 
