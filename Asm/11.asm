@@ -18,5 +18,7 @@ main:
     mv a0 s0
     call flength
     call write_dec
-
+    
+    mv a0 s0
+    closef
     exit 0

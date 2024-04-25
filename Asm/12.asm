@@ -1,11 +1,22 @@
-strchr: #nullt str ptr, char -> ptr in str/null
-    lb t0 0(a0)
-    addi a0 a0 1
-    beq t0 zero _strchr_err
-    bne t0 a1 strchr
+.include "things.asm"
 
+.text
+.globl main
+main:
+    lw a0 0(a1)
+    li a1 0
+    call fopen
+    mv s0 a0
+    call fload
     addi a0 a0 -1
-    ret
-_strchr_err:
-    li a0 0
-    ret
+_main_loop:
+    addi a0 a0 1
+    addi s1 s1 1
+    li a1 '\n'
+    call strchr
+    bne a0 zero _main_loop
+    mv a0 s1
+    call write_dec
+    mv a0 s0
+    closef
+    exit 0

@@ -1,7 +1,6 @@
 .include "testLib.asm"
 .text
 .include "things.asm"
-.include "12.asm"
 
 .globl main
 
