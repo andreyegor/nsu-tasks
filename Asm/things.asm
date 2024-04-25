@@ -259,6 +259,48 @@ _write_dec_end:
     pop ra
 	ret
 
+dec_to_int: #strptr-->a0
+	li t0 0
+	mv t1 a0
+    li t4 48
+    li t5 10
+
+_dec_to_int_before_loop:
+    lb a0 0(t1)
+	addi t1 t1 1
+
+    li t3 '-'   
+    beq a0 t3 _dec_to_int_negative
+    li t3 0
+    j _dec_to_int_main_loop
+_dec_to_int_negative:
+    li t3 1 #sign
+_dec_to_int_loop:
+	lb a0 0(t1)
+	addi t1 t1 1
+_dec_to_int_main_loop:
+    blt t0 zero _dec_to_int_error
+	beq a0 zero _dec_to_int_end
+	blt a0 t4 _dec_to_int_error
+    sub a0 a0 t4
+    bge a0 t5 _dec_to_int_error
+
+    slli t6 t0 1 #multiple 10
+    slli t0 t0 3
+    add t0 t0 t6
+
+    add t0 t0 a0
+
+	j _dec_to_int_loop
+_dec_to_int_end:
+    mv a0 t0
+    beq t3 zero _dec_to_int_quit
+    sub a0 zero a0
+_dec_to_int_quit:
+    ret
+_dec_to_int_error:
+	exit 1
+
 #math
 mul:
     mv t2 a0
@@ -437,7 +479,6 @@ flength:#file descriptor->length
 
 	mv a0 t1
 	ret
-
 _flength_err:
 	exit 1
 
@@ -445,10 +486,9 @@ _flength_err:
 fload:#file_descriptor->adress
 	push_2 ra a0
 	call flength
-	addi t1 a0 1 #\0
+	mv t1 a0
+	addi a0 a0 1 #\0
 	pop_2 ra t0
-
-
 	sbrk
 	push_2 ra, a0
 	mv a1 a0
@@ -457,8 +497,63 @@ fload:#file_descriptor->adress
 	call fread
 	pop_2 ra a0
 	ret
-	
-
 _fload_err:
+	exit 1
 
+#string functions
+strchr: #nullt str ptr, char -> ptr in str/null
+    lb t0 0(a0)
+    addi a0 a0 1
+    beq t0 zero _strchr_err
+    bne t0 a1 strchr
+
+    addi a0 a0 -1
+    ret
+_strchr_err:
+    li a0 0
+    ret
+
+
+countlines:#strptr->int
+	addi a0 a0 -1
+	li t0 0
+	push ra
+_countlines_loop:
+    addi t0 t0 1
+    addi a0 a0 1
+    li a1 '\n'
+	push t0
+    call strchr
+	pop t0
+    bne a0 zero _countlines_loop
+	mv a0 t0
+	pop ra
+	ret
+
+splitlines:#strptr -> ptr[len, strs...]
+	push_2 ra a0
+	call countlines
+	pop_2 ra t0
+	mv t1 a0
+	addi a0 a0 1
+	sbrk
+	mv t2 a0
+	sw t1 0(t2)
+	sw t0 4(t2)
+	addi t2 t2 4
+	push_2 ra a0
+	mv a0 t0
+_splitlines_loop:
+	addi t2 t2 4
+	push t2
+	li a1 '\n'
+	call strchr
+	pop t2
+	beq a0 zero _splitlines_end
+	addi a0 a0 1
+	sw a0 0(t2)
+	j _splitlines_loop
+_splitlines_end:
+	pop_2 ra a0
+	ret
 
