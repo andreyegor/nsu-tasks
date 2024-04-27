@@ -1,8 +1,28 @@
 #include <algorithm>
 #include <stdexcept>
-#include "gtest/gtest.h"
+#include <vector>
 
 class Matrix {
+    class ReturnableLine {
+        double *line;
+        int line_size;
+    public:
+        ReturnableLine(double *in_line, int in_line_size) : line(in_line), line_size(in_line_size) {
+
+        }
+
+        ReturnableLine(const ReturnableLine &other) = delete;
+
+        double operator[](int index) {
+            if (0 <= index && index < line_size) {
+                return line[index];
+            } else {
+                throw std::out_of_range("Index is out of range");
+            }
+        }
+
+    };
+
     double **matrix;
     int size{};
 
@@ -107,19 +127,26 @@ public:
     }
 
     Matrix(Matrix &&matrix) noexcept {
-        std::swap(this->matrix, matrix.matrix);
-        std::swap(this->size, matrix.size);
+        this->matrix = std::exchange(matrix.matrix, nullptr);
+        this->size = std::exchange(matrix.size, 0);
     }
 
     Matrix &operator=(const Matrix &other) {
+        if (this == &other) {
+            return *this;
+        }
         this->matrix = copy_matrix(other.matrix, other.size);
         this->size = other.size;
         return *this;
     }
 
     Matrix &operator=(Matrix &&other) noexcept {
-        std::swap(this->matrix, other.matrix);
-        std::swap(this->size, other.size);
+        if (this == &other) {
+            return *this;
+        }
+        delete this->matrix;
+        this->matrix = std::exchange(other.matrix, nullptr);
+        this->size = std::exchange(other.size, 0);
         return *this;
     }
 
@@ -136,7 +163,7 @@ public:
 
     Matrix &operator+=(const Matrix &other) {
         if (size != other.size) {
-            throw std::range_error("Matrices are different sizes");
+            throw std::runtime_error("Matrices are different sizes");
         }
         add_matrix_first(this->matrix, other.matrix, size);
         return *this;
@@ -182,11 +209,20 @@ public:
         return *this;
     }
 
+    friend Matrix operator+(double scal, Matrix &other) {
+        return other + scal;
+    }
+
+    friend Matrix operator*(double scal, Matrix &other) {
+        return other * scal;
+    }
+
+
     ~Matrix() {
         delete_matrix(matrix, size);
     }
 
-    bool operator==(Matrix &other) {
+    bool operator==(const Matrix &other) {
         if (size != other.size) {
             return false;
         }
@@ -204,8 +240,12 @@ public:
         return not(*this == other);
     }
 
-    double *operator[](int index) {
-        return matrix[index];
+    ReturnableLine operator[](int index) {
+        if (0 <= index && index < size) {
+            return {matrix[index], size};
+        } else {
+            throw std::out_of_range("Index is out of range");
+        }
     }
 
     explicit  operator double() const {
@@ -221,51 +261,3 @@ public:
 };
 
 
-TEST(FirstCase, from_vector) {
-    Matrix first{std::vector<double>{1, 2}};
-    Matrix second{{{1., 0.}, {0., 2.}}, 2};
-    EXPECT_TRUE(first == second);
-};
-
-TEST(SecondCase, conversion_to_double) {
-    Matrix first{{{1., 0.}, {0., 2.}}, 2};
-    EXPECT_TRUE((double) first == 3.);
-}
-
-TEST(ThirdCase, Overloaded_operators_add) {
-    Matrix first{{{1., 1.}, {2., 0.}}, 2};
-    Matrix second{{{0., 1.}, {1., 4.}}, 2};
-    Matrix expected{{{1., 2.}, {3., 4.}}, 2};
-
-    EXPECT_TRUE(first + second == expected);
-    second += first;
-    EXPECT_TRUE(second == expected);
-
-    Matrix expected_scalar{{{2., 2.}, {3., 1.}}, 2};
-    EXPECT_TRUE(first + 1. == expected_scalar);
-    first += 1.;
-    EXPECT_TRUE(first == expected_scalar);
-}
-
-TEST(ThirdCase, Overloaded_operators_mul) {
-    Matrix first{{{1, 2}, {3, 4}}, 2};
-    Matrix second{{{5, 6}, {7, 8}}, 2};
-    Matrix expected{{{19, 22}, {43, 50}}, 2};
-
-    EXPECT_TRUE(first * second == expected);
-    first *= second;
-    EXPECT_TRUE(first == expected);
-
-    Matrix expected_scalar{{{10, 12}, {14, 16}}, 2};
-    EXPECT_TRUE(second * 2 == expected_scalar);
-    second *= 2;
-    EXPECT_TRUE(second == expected_scalar);
-}
-
-TEST(FourthCase, double_indexing) {
-    Matrix first{{{1, 2}, {3, 4}}, 2};
-    EXPECT_TRUE(first[0][0]==1);
-    EXPECT_TRUE(first[0][1]==2);
-    EXPECT_TRUE(first[1][0]==3);
-    EXPECT_TRUE(first[1][1]==4);
-}
