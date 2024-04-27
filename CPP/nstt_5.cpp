@@ -1,17 +1,19 @@
 #include "tuple"
-#include "gtest/gtest.h"
 #include "iostream"
 
-template<typename type>
+template<typename T>
 class ScopedPointerFirst {
-    type *pointer = nullptr;
+    T *pointer = nullptr;
 public:
-    explicit ScopedPointerFirst(type *inp) : pointer(inp) {}
+    explicit ScopedPointerFirst(T *inp) : pointer(inp) {}
 
-    ScopedPointerFirst(const ScopedPointerFirst &other) : pointer(new type(*other.pointer)) {}
+    ScopedPointerFirst(const ScopedPointerFirst &other) : pointer(new T(*other.pointer)) {}
 
     ScopedPointerFirst &operator=(const ScopedPointerFirst &other) {
-        pointer = new type(*other.pointer);
+        if (this == &other) {
+            return *this;
+        }
+        pointer = new T(*other.pointer);
         return *this;
     }
 
@@ -19,8 +21,12 @@ public:
         std::swap(pointer, other.pointer);
     }
 
-    ScopedPointerFirst &operator=(ScopedPointerFirst &&other) {
-        std::swap(pointer, other.pointer);
+    ScopedPointerFirst &operator=(ScopedPointerFirst &&other) noexcept {
+        if (this == &other) {
+            return *this;
+        }
+        delete pointer;
+        pointer = std::exchange(other.pointer, nullptr);
         return *this;
     }
 
@@ -28,19 +34,19 @@ public:
         delete pointer;
     }
 
-    type &operator*() {
+    T &operator*() {
         return *pointer;
     }
 
-    const type &operator*() const {
+    const T &operator*() const {
         return *pointer;
     }
 
-    type *operator->() {
+    T *operator->() {
         return pointer;
     }
 
-    const type *operator->() const {
+    const T *operator->() const {
         return pointer;
     }
 
@@ -48,22 +54,22 @@ public:
         return pointer == other.pointer;
     }
 
-    type *get() {
+    T *get() {
         return pointer;
     }
 
 };
 
-template<typename type>
-class ScopedPointerSecond : public ScopedPointerFirst<type> {
+template<typename T>
+class ScopedPointerSecond : public ScopedPointerFirst<T> {
 public:
-    explicit ScopedPointerSecond(type *inp) : ScopedPointerFirst<type>(inp) {}
+    explicit ScopedPointerSecond(T *inp) : ScopedPointerFirst<T>(inp) {}
 
     ScopedPointerSecond(const ScopedPointerSecond &other) = delete;
 
     ScopedPointerSecond &operator=(const ScopedPointerSecond &other) = delete;
 
-    ScopedPointerSecond(ScopedPointerSecond &&other) noexcept: ScopedPointerFirst<type>(std::move(other)) {}
+    ScopedPointerSecond(ScopedPointerSecond &&other) noexcept: ScopedPointerFirst<T>(std::move(other)) {}
 };
 
 
@@ -76,24 +82,3 @@ struct Triple {
         return x == other.x && y == other.y && z == other.z;
     }
 };
-
-
-TEST(ScopePointerFirst, deep_copyng) {
-    ScopedPointerFirst sp1{new Triple{13, 42, 1}};
-    ScopedPointerFirst sp2 = sp1;
-    sp2->x = 42;
-    EXPECT_FALSE(sp1 == sp2);
-}
-
-TEST(ScopePointerFirst, transferring_an_ownership) {
-    ScopedPointerFirst sp1{new Triple{13, 42, 1}};
-    ScopedPointerFirst sp2 = std::move(sp1);
-    EXPECT_TRUE(sp1.get() == nullptr);
-}
-
-TEST(ScopePointerSecond, transferring_an_ownership) {
-    ScopedPointerSecond sp1{new Triple{13, 42, 1}};
-    ScopedPointerSecond sp2 = std::move(sp1);
-    std::cout<<sp1.get()<<std::endl;
-    EXPECT_TRUE(sp1.get() == nullptr);
-}

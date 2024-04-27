@@ -191,7 +191,7 @@ public:
 
     Val(const Val &other) = delete;
 
-    Val &operator=(const Val &other) = delete;
+    Val(Val &&other) = delete;
 
     explicit operator std::string() override {
         return std::to_string(val);
