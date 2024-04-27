@@ -172,6 +172,8 @@ class AvlTree {
 
     void kill_child(Node *child) {
         if (!(child->left || child->right || child->parent)) {
+            root = nullptr;
+            delete child;
             return;
         }
         if (child->left and child->right) {
@@ -186,8 +188,6 @@ class AvlTree {
             child->parent->left = nullptr;
         } else if (child->parent->right == child) {
             child->parent->right = nullptr;
-        } else if (child == root) {
-            root = nullptr;
         } else {
             throw std::runtime_error("Something went wrong");
         }
