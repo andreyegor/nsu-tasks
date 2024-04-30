@@ -106,7 +106,7 @@
 
 #ascii functions
 write_num: # a0-> also use t0 t1
-	beq a0 zero _write_num_zero
+	# beq a0 zero _write_num_zero
 	mv t0 a0
 
 	push ra
@@ -562,3 +562,27 @@ _splitlines_end:
 	pop_2 ra a0
 	ret
 
+strstr: #strptr line, strptr to find->strptr/0
+	mv t0 a0
+	mv t1 a1 #a1 start
+_strstr_loop:
+	lb t2 0(a1)
+	beq t2 zero _strstr_good
+	lb t3 0(a0)
+	beq t3 zero _strstr_bad
+	
+	addi a0 a0 1
+	bne t3 t2 _strstr_restart
+	addi a1 a1 1
+	j _strstr_loop
+_strstr_restart:
+	addi a0 t0 1
+	mv t0 a0
+	mv a1 t1
+	j _strstr_loop
+_strstr_bad:
+	li a0 0
+	ret
+_strstr_good:
+	mv a0 t0
+	ret
