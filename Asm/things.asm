@@ -106,6 +106,7 @@
 
 #ascii functions
 write_num: # a0-> also use t0 t1
+	beq a0 zero _write_num_zero
 	mv t0 a0
 
 	push ra
@@ -129,6 +130,9 @@ _write_num_loop:
 	addi t1 t1 -4
 	j _write_num_loop
 _write_num_end:
+	ret
+_write_num_zero:
+	writi '0'
 	ret
 
 
@@ -550,6 +554,7 @@ _splitlines_loop:
 	call strchr
 	pop t2
 	beq a0 zero _splitlines_end
+	sb zero 0(a0)
 	addi a0 a0 1
 	sw a0 0(t2)
 	j _splitlines_loop

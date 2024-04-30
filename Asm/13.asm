@@ -15,7 +15,7 @@ _main_continue:
     mv a0 s0
     li a1 0
     call fopen
-    mv s2 a0
+    mv s5 a0
     call fload
     call splitlines
 
@@ -24,19 +24,30 @@ _main_continue:
     lw s1 0(a0)
 _main_write:
     beq s1 zero _main_end
-    lw t0 0(a0)
-    sub t0 t0 s1
-    ble t0 zero _main_err
+    lw s3 0(a0)
+    mv s4 s3
+    sub s3 s3 s1
+    blt s3 zero _main_err
+    bgt s3 s4 _main_err
     addi a0 a0 4
 
-    add a0 a0 t0
-    add a0 a0 t0
-    add a0 a0 t0
-    add a0 a0 t0
-    lw a0 0(a0)
+    add s2 a0 s3
+    add s2 s2 s3
+    add s2 s2 s3
+    add s2 s2 s3
+_main_write_loop:
+    mv a0 s3
+    call write_num
+    writi':'
+    writi' '
+    lw a0 0(s2)
     write_str
+    writi'\n'
+    addi s2 s2 4
+    addi s3 s3 1
+    bne s3 s4 _main_write_loop
 _main_end:
-    mv a0 s2
+    mv a0 s5
     closef
     exit 0
 _main_err:
