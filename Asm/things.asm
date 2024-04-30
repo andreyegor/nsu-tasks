@@ -586,3 +586,10 @@ _strstr_bad:
 _strstr_good:
 	mv a0 t0
 	ret
+
+
+.macro set_flag %f %t #from to, to=to==from?0:to
+	bne %f %t exit
+	li %t 0 
+exit:
+.end_macro
