@@ -28,6 +28,14 @@ _main_read_loop:
     set_flag t0 s9
     j _main_read_loop
 _main_continue:
+    to_bool s6
+    xori s6 s6 1
+    to_bool s9
+    xori s9 s9 1
+
+    mv a0 s1
+    call_if s9 lower
+
     mv a0 s0
     li a1 0
     call fopen
@@ -35,9 +43,6 @@ _main_continue:
     call fload
     call splitlines
 
-    li t0 -1
-    bne s1 t0 _main_write
-    lw s1 0(a0)
     li s4 0 #counter
 _main_write:
     lw t0 0(a0)
@@ -49,12 +54,17 @@ _main_write_loop:
     lw a0 0(s2)
     mv a1 s1
     call strstr
+    to_bool a0
+    xor a0 a0 s6
+
     beq a0 zero _main_write_loop_end
     beq s8 zero _main_write_loop_just_counter
+    bne s7 zero _main_write_loop_no_nums
     mv a0 s4
     call write_dec
     writi':'
     writi' '
+_main_write_loop_no_nums:
     lw a0 0(s2)
     write_str
     writi'\n'

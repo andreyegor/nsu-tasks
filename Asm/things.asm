@@ -587,9 +587,36 @@ _strstr_good:
 	mv a0 t0
 	ret
 
+lower: #strptr line->strptr lower line(not new)
+	mv t0 a0
+	li t2 65
+	li t3 90
+_lower_loop:
+	lb t1 0(t0)
+	beq t1 zero _lower_end
+	addi t0 t0 1
+	blt t1 t2 _lower_loop
+	bgt t1 t3 _lower_loop
+	addi t1 t1 32
+	sb t1 -1(t0)
+	j _lower_loop
+_lower_end:
+	ret
 
 .macro set_flag %f %t #from to, to=to==from?0:to
 	bne %f %t exit
 	li %t 0 
+exit:
+.end_macro
+
+.macro to_bool %r
+	beq %r zero exit
+	li %r 1
+exit:
+.end_macro
+
+.macro call_if %r %callee
+	beq %r zero exit
+	call %callee
 exit:
 .end_macro

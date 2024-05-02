@@ -30,30 +30,37 @@ comma_space: .asciz ", "
     write_str
     la a0 failed_msg_2
     write_str
-    _write_res %int_act
+    mv a0 %int_act
+    push %int_exp
+    call _write_res
+    pop %int_exp
     writi ' '
     la a0 failed_msg_3
     write_str
-    _write_res %int_exp
+    mv a0 %int_exp
+    call _write_res
     writi '\n'
 .end_macro
 
 
-.macro _write_res %int_res #int_res -> int_res!=-1 ? "OK(a0)" | "NONE"
-    li a1 -1
-    beq %int_res a1 _write_res_none
+_write_res: #int_res -> stdout(int_res!=-1 ? "OK(a0)" | "NONE")
+    li t0 -1
+    beq a0 t0 _write_res_none
 
+    mv t0 a0
     la a0 ok_open
     write_str
-    mv a0 %int_res
+    mv a0 t0
+    push ra
     call write_dec
+    pop ra
     writi ')'
     j _write_res_end
 _write_res_none:
     la a0 none
     write_str
 _write_res_end:
-.end_macro
+    ret
 
 .macro FUNK %foo %name
     .data

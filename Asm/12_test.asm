@@ -1,6 +1,5 @@
-.include "testLib.asm"
-.text
 .include "things.asm"
+.include "testLib.asm"
 
 .globl main
 
