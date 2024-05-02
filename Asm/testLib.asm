@@ -13,21 +13,21 @@ failed_msg_3: .asciz "expected "
 ok_open: .asciz "OK("
 none: .asciz "NONE"
 comma_space: .asciz ", "
+.text
+#Test falied: foo(first, second) results in OK(int)/NONE, expected OK(int)/NONE
 
-#Test falied: foo(str, char) results in OK(int)/NONE, expected OK(int)/NONE
-
-.macro _write_failed_msg %str_in %char_in %int_act, %int_exp #str_test, char_test, (actual, expected) - int, -1 for NONE; all are not a-registers
+.macro _write_failed_msg %str_1 %str_2 %int_act, %int_exp #str_test, char_test, (actual, expected) - int, -1 for NONE; all are not a-registers
     la a0 failed_msg_1
     write_str
     mv a0 s1
     write_str
     writi '('
-    mv a0 %str_in
+    mv a0 %str_1
     write_str
     la a0 comma_space
     write_str
-    mv a0 %char_in
-    write
+    mv a0 %str_2
+    write_str
     la a0 failed_msg_2
     write_str
     _write_res %int_act
@@ -59,7 +59,7 @@ _write_res_end:
     .data
         foo_name: .asciz %name
     .text
-        la s0 strchr
+        la s0 %foo
         la s1 foo_name
         la a0 start_msg_1
         write_str
@@ -69,15 +69,16 @@ _write_res_end:
         write_str
 .end_macro
 
-.macro OK %res %line %char
+.macro OK %res %first %second
     .data
-        line: .asciz %line
+        first: .asciz %first
+        second: .asciz %second
     .text
-        la a0 line
-        li a1 %char
+        la a0 first
+        la a1 second
         jalr s0 0
 
-        la t0 line
+        la t0 first
         li t3 %res
         beq a0 zero none
 
@@ -89,25 +90,26 @@ _write_res_end:
     failed:
         addi s3 s3 1
 
-        li t1 %char
+        la t1 second
         _write_failed_msg t0 t1 t2 t3
 
         j end
     none:
         addi s3 s3 1
 
-        li t1 %char
+        la t1 second
         li t2 -1
         _write_failed_msg t0 t1 t2 t3
     end:
 .end_macro
 
-.macro NONE %line %char
+.macro NONE %first %second
     .data
-        line: .asciz %line
+        first: .asciz %first
+        second: .asciz %second
     .text
-        la a0 line
-        li a1 %char
+        la a0 first
+        la a1 second
         jalr s0 0
 
         bne a0 zero failed
@@ -118,8 +120,8 @@ _write_res_end:
     failed:
         addi s3 s3 1
 
-        la t0 line
-        li t1 %char
+        la t0 first
+        la t1 second
         sub t2 a0 t0
         li t3 -1
         _write_failed_msg t0 t1 t2 t3
