@@ -603,6 +603,48 @@ _lower_loop:
 _lower_end:
 	ret
 
+
+strspn: #str, spn -> int
+	mv t6 a1
+	li t2 0
+_strspn_loop:
+	lb t0 0(a0)
+	beq t0 zero _strspn_quit
+_strspn_spn_loop:
+	lb t1 0(a1)
+	beq t1 zero _strspn_quit
+	addi a1 a1 1
+	bne t0 t1 _strspn_spn_loop
+	addi t2 t2 1
+_strspn_loop_fin:
+	addi a0 a0 1
+	mv a1 t6
+	j _strspn_loop
+_strspn_quit:
+	mv a0 t2
+	ret
+
+strcspn: #str, spn -> int
+	mv t6 a1
+	li t2 0
+_strcspn_loop:
+	lb t0 0(a0)
+	beq t0 zero _strcspn_quit
+_strcspn_spn_loop:
+	lb t1 0(a1)
+	beq t1 zero _strcspn_loop_fin
+	addi a1 a1 1
+	bne t0 t1 _strcspn_spn_loop
+	j _strcspn_quit
+_strcspn_loop_fin:
+	addi t2 t2 1
+	addi a0 a0 1
+	mv a1 t6
+	j _strcspn_loop
+_strcspn_quit:
+	mv a0 t2
+	ret
+
 .macro set_flag %f %t #from to, to=to==from?0:to
 	bne %f %t exit
 	li %t 0 
