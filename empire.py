@@ -1,8 +1,7 @@
 import sys
+from solution import solution
 
 
-def solution(data: str) -> str:
-    pass
 
 
 def run():

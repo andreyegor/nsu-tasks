@@ -2,7 +2,7 @@
 RUNNABLE = <ADD YOUR RUNNABLE HERE>
 
 # Example if you use Python:
-#RUNNABLE = python empire.py
+RUNNABLE = python3 empire.py
 
 # Example if you use C (do not forget to uncomment building step below):
 # RUNNABLE = ./main
