@@ -9,7 +9,7 @@ main:
     li s6 'c'
     li s7 'l'
     li s8 'L'
-    li s9 'v'
+    li s9 'w'
 
     li t0 2 
     bne a0 t0 _main_err
@@ -59,19 +59,22 @@ _main_max_length:
     mv a0 s0
     call splitlines
     lw s1 0(a0) #max lines
-    addi s0 a0 4
+    mv s0 a0
     li t0 0 #lines counter
 _main_max_length_mx:
     blt s2 s4 _main_max_length_before_loop
     mv s4 s2
 _main_max_length_before_loop:
+    li s2 0
     beq t0 s1 _main_end
+    addi s0 s0 4
     lw t1 0(s0)
-    addi t0 t0 4
+    addi t0 t0 1
 _main_max_length_loop:
     lb t2 0(t1)
     beq t2 zero _main_max_length_mx
     addi s2 s2 1
+    addi t1 t1 1
     j _main_max_length_loop
 _main_chars:
     mv a0 s5

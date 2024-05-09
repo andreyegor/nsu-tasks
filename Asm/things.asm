@@ -382,15 +382,18 @@ mod10:
     beq t0 zero _mod_10_continue
 	sub a0 zero a0
 _mod_10_continue:
-    mv t0 a0
+	mv t0 a0
     push_2 ra t0
     call div10
-	li a1 10
-	call mul
-	pop_2 ra t0
+    pop_2 ra t0
+
+    slli t1 a0 1 #multiple 10
+    slli a0 a0 3
+    add a0 a0 t1
 
     sub a0 t0 a0
     ret
+
 
 count_bytes_bits: #a0-->a0, also use t0
 	mv t0 a0
