@@ -1,4 +1,5 @@
-from re import match
+from primes import Primes
+from random import randint
 from typing import Any, List, Tuple, Union
 
 
@@ -70,27 +71,60 @@ class LinkedList:
         return None
 
 
+class UniversalHashingString:
+    LIMIT = 2**32
+    INITIAL_VALUE = 0
+
+    def __init__(self, func_val=None) -> None:
+        self.__primes = Primes()
+        self.upd_val(func_val)
+        self.__mod = self.__primes.get()
+
+    def hash(self, line: str):
+        out = self.INITIAL_VALUE
+        for val in line:
+            out = ((out * self.__val) + ord(val)) % self.__mod
+        return out
+
+    def upd(self, val=None):
+        self.upd_val(val)
+        return self.upd_mod()
+
+    def upd_val(self, val=None) -> None:
+        if val:
+            self.__val = val
+        else:
+            self.__val = randint(1, self.LIMIT)
+
+    def upd_mod(self) -> None:
+        self.__mod = self.__primes.next()
+        return self.__mod
+
+    def get_mod(self):
+        return self.__mod
+
+
 class Counter:
-    def __init__(self, default_length=1, less_resize=3, more_resize=2) -> None:
-        self.LESS_RESIZE = less_resize
-        self.MORE_RESIZE = more_resize
-        self.length = 0
-        self.data = [LinkedList() for i in range(default_length)]
-        pass
+    LESS_RESIZE=3
+    
+    def __init__(self) -> None:
+        self.__hash = UniversalHashingString()
+        self.__length = 0
+        self.__data = [LinkedList() for i in range(self.__hash.get_mod())]
 
     def __len__(self) -> int:
-        return self.length
+        return self.__length
 
     def add(self, line: str, cnt: int = 1) -> None:
-        if node := self.data[self.__hsh(line)].includes(line):
+        if node := self.__data[self.__hash.hash(line)].includes(line):
             node.val += cnt
         else:
             self.__auto_resize()
-            self.length += 1
-            self.data[self.__hsh(line)].add(line, cnt)
+            self.__length += 1
+            self.__data[self.__hash.hash(line)].add(line, cnt)
 
     def sub(self, line: str, cnt: int = 1) -> None:
-        node = self.data[self.__hsh(line)].includes(line)
+        node = self.__data[self.__hash.hash(line)].includes(line)
         if not node:
             raise KeyError("Nothing to sub")
         node.val -= cnt
@@ -99,38 +133,30 @@ class Counter:
 
     def destroy(self, line: str) -> None:
         try:
-            self.data[self.__hsh(line)].remove(line)
-            self.length -= 1
+            self.__data[self.__hash.hash(line)].remove(line)
+            self.__length -= 1
         except KeyError:
             raise KeyError("Nothing to destroy")
 
     def get(self, line: str):
-        node = self.data[self.__hsh(line)].includes(line)
+        node = self.__data[self.__hash.hash(line)].includes(line)
         if node == None:
             return None
         assert node.val != 0
         return node.val
 
-    def __auto_resize(self) -> None:  # TODO проверить ужимание
-        # if len(self.data) == 1:TODO что-то нужно но не такое
-        #     return
-        if len(self.data) - self.length == 0:
-            self.__rehash(len(self.data) * self.MORE_RESIZE)
-        elif len(self.data) - self.length > len(self.data) - (
-            len(self.data) // self.LESS_RESIZE
-        ):
-            self.__rehash(len(self.data) // self.MORE_RESIZE)
+    def __auto_resize(self) -> None:
+        if len(self.__data) - self.__length == 0:
+            self.__hash.upd()
+            self.__rehash()
 
-    def __rehash(self, new_length) -> None:
-        old_data = self.data
-        self.length = 0
-        self.data = [LinkedList() for i in range(new_length)]
+    def __rehash(self) -> None:
+        old_data = self.__data
+        self.__length = 0
+        self.__data = [LinkedList() for i in range(self.__hash.get_mod())]
         for llst in old_data:
             for key, val in llst:
                 self.add(key, val)
-
-    def __hsh(self, line: str) -> int:  # TODO TODO TODO TODO
-        return hash(line) % len(self.data)  # TODO TODO TODO TODO
 
 
 class Interface:
