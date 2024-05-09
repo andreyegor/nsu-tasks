@@ -1,10 +1,10 @@
 from re import match
-from typing import Any, List, Self, Tuple, Union
+from typing import Any, List, Tuple, Union
 
 
 class LinkedList:
     class Node:
-        def __init__(self, key: Any, val: Any, nxt: Union[Self, None] = None) -> None:
+        def __init__(self, key: Any, val: Any, nxt: Union[object, None] = None) -> None:
             self.key = key
             self.val = val
             self.nxt = nxt
