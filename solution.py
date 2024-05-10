@@ -1,4 +1,6 @@
+from sys import argv
 from primes import Primes
+from tree import Tree
 from random import randint
 from typing import Any, List, Tuple, Union
 
@@ -23,11 +25,11 @@ class LinkedList:
         self.iter_now = self.root
         return self
 
-    def __next__(self) -> Tuple[Any, Any]:
+    def __next__(self) -> Node:
         if not self.iter_now:
             raise StopIteration
         out, self.iter_now = self.iter_now, self.iter_now.nxt
-        return (out.key, out.val)
+        return out
 
     def add(self, key, val):
         self.length += 1
@@ -39,7 +41,7 @@ class LinkedList:
         self.tail.nxt = self.Node(key, val)
         self.tail = self.tail.nxt
 
-    def remove(self, key) -> Any:
+    def remove(self, key) -> None:
         if not self.root:
             raise KeyError("Nothing to remove")
         prev = None
@@ -55,7 +57,7 @@ class LinkedList:
                 self.root = now.nxt
             else:
                 prev.nxt = now.nxt
-            return now.val
+            return
         raise KeyError("Nothing to remove")
 
     def includes(self, key) -> Union[Node, None]:
@@ -69,6 +71,65 @@ class LinkedList:
         else:
             return now
         return None
+
+
+class ListTree:
+    def __init__(self, border=1):
+        self.__is_tree = False
+        if border == 0:
+            self.__is_tree = True
+        self.__tree = Tree()
+        self.__list = LinkedList()
+        self.__border = border
+        self.__length = 0
+
+    def __len__(self):
+        return self.__length
+
+    def __iter__(self):
+        if self.__is_tree:
+            return self.__tree.__iter__()
+        return self.__list.__iter__()
+
+    def add(self, key, val):
+        self.__length += 1
+        if self.__length >= self.__border and self.__is_tree == False:
+            self.__is_tree = True
+            for node in self.__list:
+                self.__tree.insert(node.key, node.val)
+            self.__list = LinkedList()
+
+        if self.__is_tree:
+            # print("hello from tree")
+            self.__tree.insert(key, val)
+        else:
+            # print("hello from list")
+            self.__list.add(key, val)
+
+    def remove(self, key):
+        self.__length -= 1
+        if self.__is_tree:
+            try:
+                self.__tree.extract(key)
+            except AttributeError:
+                raise KeyError("Nothing to remove")
+        else:
+            self.__list.remove(key)
+
+        if self.__length < self.__border and self.__is_tree == True:
+            self.__is_tree = False
+            for node in self.__tree:
+                self.__list.add(node.key, node.val)
+            self.__tree = Tree()
+
+    def includes(self, key):
+        if self.__is_tree == False:
+            return self.__list.includes(key)
+
+        try:
+            return self.__tree.peek(key)
+        except AttributeError:
+            return None
 
 
 class UniversalHashingString:
@@ -105,12 +166,12 @@ class UniversalHashingString:
 
 
 class Counter:
-    LESS_RESIZE=3
-    
-    def __init__(self) -> None:
+    LESS_RESIZE = 3
+
+    def __init__(self, list_tree_border=4) -> None:
         self.__hash = UniversalHashingString()
         self.__length = 0
-        self.__data = [LinkedList() for i in range(self.__hash.get_mod())]
+        self.__data = [ListTree(list_tree_border) for i in range(self.__hash.get_mod())]
 
     def __len__(self) -> int:
         return self.__length
@@ -155,8 +216,8 @@ class Counter:
         self.__length = 0
         self.__data = [LinkedList() for i in range(self.__hash.get_mod())]
         for llst in old_data:
-            for key, val in llst:
-                self.add(key, val)
+            for node in llst:
+                self.add(node.key, node.val)
 
 
 class Interface:
@@ -167,8 +228,8 @@ class Interface:
 
     __ROGER_THAT = "Roger that"
 
-    def __init__(self):
-        self.__cnt = Counter()
+    def __init__(self, list_tree_border=4):
+        self.__cnt = Counter(list_tree_border)
 
     def do(self, line: str):  # TODO не оч
         if line.startswith(self.__LOCATED_IN):
@@ -201,9 +262,9 @@ class Interface:
         return f"Bases on {line}: {out if out else 0}"
 
 
-def solution(data: str) -> str:
+def solution(data: str, border=4) -> str:
     out = ""
-    intrf = Interface()
+    intrf = Interface(border)
     for line in data.splitlines():
         try:
             out += intrf.do(line) + "\n"

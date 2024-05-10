@@ -1,5 +1,5 @@
 # 
-RUNNABLE = <ADD YOUR RUNNABLE HERE>
+#RUNNABLE = <ADD YOUR RUNNABLE HERE>
 
 # Example if you use Python:
 RUNNABLE = python3 empire.py

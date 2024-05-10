@@ -13,7 +13,7 @@ def run():
     with open(input_name, "r") as inp:
         with open(output_name, "w") as out:
             data = inp.read()
-            result = solution(data)
+            result = solution(data, 1)
             out.write(result)
 
 
