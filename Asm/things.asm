@@ -351,23 +351,38 @@ _mul_err:
     exit 1
 
 div10: #a0->a0 also use
+	beq a0 zero _div10_zero
     li t1 0x80000000
     and t1 t1 a0 #sign
     beq t1 zero _div_10_continue
 	sub a0 zero a0
 _div_10_continue:
-    li t0 9
-    ble a0 t0 _div10_zero
+	mv t2 a0
 
-    srli t0 a0 2
+	srli t0 a0 1
+	srli a0 a0 2
+	add a0 a0 t0
 
-    push_3 ra t0 t1
-    srli a0 a0 1
-    call div10
-    pop_3 ra t0 t1
+	srli t0 a0 4
+	add a0 a0 t0
 
-    sub a0 t0 a0
-    srli a0 a0 1
+	srli t0 a0 8
+	add a0 a0 t0
+
+	srli t0 a0 16
+	add a0 a0 t0
+
+	srli a0 a0 3
+
+	slli t0 a0 2
+	add t0 t0 a0
+	slli t0 t0 1
+	sub t0 t2 t0
+	
+	li t2 10
+	blt t0 t2 _div_10_sign_restore
+	addi a0 a0 1
+_div_10_sign_restore:
 	beq t1 zero _div_10_ret
     sub a0 zero a0
 _div_10_ret:
@@ -382,8 +397,7 @@ mod10:
     beq t0 zero _mod_10_continue
 	sub a0 zero a0
 _mod_10_continue:
-	mv t0 a0
-    push_2 ra t0
+    push_2 ra a0
     call div10
     pop_2 ra t0
 
