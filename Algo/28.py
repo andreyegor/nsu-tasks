@@ -37,10 +37,10 @@ class Bloom:
 
 
 if __name__ == "__main__":
-    TEST_RANGE = 100000
+    TEST_RANGE = 5000
     PROB = 0.01
-    test = sample(range(1,  0xffffffff), TEST_RANGE)
-    includes, not_includes = test[0:TEST_RANGE//10], test[TEST_RANGE//10:]
+    test = sample(range(1,  0xffffffff), TEST_RANGE*2)
+    includes, not_includes = test[0:TEST_RANGE], test[TEST_RANGE:]
 
     blm = Bloom(TEST_RANGE, PROB)
     for e in includes:
@@ -53,5 +53,5 @@ if __name__ == "__main__":
     for e in not_includes:
         if blm.lookup(e):
             cntr += 1
-    if not cntr / len(not_includes) <= PROB * 1.5:
-        print (cntr/len(not_includes))
+    if not cntr / TEST_RANGE <= PROB * 1.5:
+        print (cntr/TEST_RANGE)
