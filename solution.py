@@ -12,6 +12,9 @@ class LinkedList:
             self.val = val
             self.nxt = nxt
 
+    def __len__(self):
+        return self.length
+
     def __init__(self, now=None) -> None:
         if not now:
             self.length = 0
@@ -73,63 +76,78 @@ class LinkedList:
         return None
 
 
-class ListTree:
+class TreeWrapper(Tree):
+    def __init__(self, *args, **kwargs) -> None:
+        return super().__init__(*args, **kwargs)
+
+    def add(self, *args, **kwargs):
+        return super().insert(*args, **kwargs)
+
+    def remove(self, *args, **kwargs):
+        try:
+            return super().extract(*args, **kwargs)
+        except AttributeError:
+            raise KeyError("Nothing to remove")
+
+    def includes(self, *args, **kwargs):
+        try:
+            return super().peek(*args, **kwargs)
+        except AttributeError:
+            return None
+
+    def insert(self, *args, **kwargs):
+        raise AttributeError()
+
+    def extract(self, *args, **kwargs):
+        raise AttributeError()
+
+    def peek(self, *args, **kwargs):
+        raise AttributeError()
+
+
+class AutoListTree:
     def __init__(self, border=1):
         self.__is_tree = False
         if border == 0:
-            self.__is_tree = True
-        self.__tree = Tree()
-        self.__list = LinkedList()
+            self.__list_tree = TreeWrapper()
+        else:
+            self.__list_tree = LinkedList()
         self.__border = border
         self.__length = 0
 
     def __len__(self):
-        return self.__length
+        return self.__list_tree.__len__()
 
     def __iter__(self):
-        if self.__is_tree:
-            return self.__tree.__iter__()
-        return self.__list.__iter__()
+        return self.__list_tree.__iter__()
 
     def add(self, key, val):
-        self.__length += 1
-        if self.__length >= self.__border and self.__is_tree == False:
-            self.__is_tree = True
-            for node in self.__list:
-                self.__tree.insert(node.key, node.val)
-            self.__list = LinkedList()
-
-        if self.__is_tree:
-            # print("hello from tree")
-            self.__tree.insert(key, val)
-        else:
-            # print("hello from list")
-            self.__list.add(key, val)
+        if (
+            len(self.__list_tree) >= self.__border
+            and type(self.__list_tree) == LinkedList
+        ):
+            # print("AAAA list to tree")
+            old_list_tree = self.__list_tree
+            self.__list_tree = TreeWrapper()
+            for node in old_list_tree:
+                self.__list_tree.add(node.key, node.val)
+        self.__list_tree.add(key, val)
 
     def remove(self, key):
-        self.__length -= 1
-        if self.__is_tree:
-            try:
-                self.__tree.extract(key)
-            except AttributeError:
-                raise KeyError("Nothing to remove")
-        else:
-            self.__list.remove(key)
+        self.__list_tree.remove(key)
 
-        if self.__length < self.__border and self.__is_tree == True:
-            self.__is_tree = False
-            for node in self.__tree:
-                self.__list.add(node.key, node.val)
-            self.__tree = Tree()
+        if (
+            len(self.__list_tree) < self.__border
+            and type(self.__list_tree) == TreeWrapper
+        ):
+            # print("AAAA tree to list")
+            old_list_tree = self.__list_tree
+            self.__list_tree = LinkedList()
+            for node in old_list_tree:
+                self.__list_tree.add(node.key, node.val)
 
     def includes(self, key):
-        if self.__is_tree == False:
-            return self.__list.includes(key)
-
-        try:
-            return self.__tree.peek(key)
-        except AttributeError:
-            return None
+        return self.__list_tree.includes(key)
 
 
 class UniversalHashingString:
@@ -171,7 +189,9 @@ class Counter:
     def __init__(self, list_tree_border=4) -> None:
         self.__hash = UniversalHashingString()
         self.__length = 0
-        self.__data = [ListTree(list_tree_border) for i in range(self.__hash.get_mod())]
+        self.__data = [
+            AutoListTree(list_tree_border) for i in range(self.__hash.get_mod())
+        ]
 
     def __len__(self) -> int:
         return self.__length
