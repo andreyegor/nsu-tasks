@@ -38,11 +38,11 @@ class Bloom:
 
 if __name__ == "__main__":
     TEST_RANGE = 5000
-    PROB = 0.01
+    PROB = 0.99
     test = sample(range(1,  0xffffffff), TEST_RANGE*2)
     includes, not_includes = test[0:TEST_RANGE], test[TEST_RANGE:]
 
-    blm = Bloom(TEST_RANGE, PROB)
+    blm = Bloom(TEST_RANGE*10, PROB)
     for e in includes:
         blm.insert(e)
 
