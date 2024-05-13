@@ -9,7 +9,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=leak")
 
 link_libraries(GTest::gtest_main)
 
-add_executable(test_1349 nstt_1349_test.cpp)
+add_executable(test_134912 nstt_134912_test.cpp)
 add_executable(test_2 nstt_2_test.cpp)
 add_executable(test_5 nstt_5_test.cpp)
 add_executable(test_6 nstt_6_test.cpp)

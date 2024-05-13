@@ -1,5 +1,7 @@
 #include <utility>
 #include <stdexcept>
+#include <queue>
+#include <iostream>
 
 template<typename KeyT, typename ValT>
 class AvlTree {
@@ -68,6 +70,67 @@ class AvlTree {
         ~Node() {
             delete left;
             delete right;
+        }
+    };
+
+    class Iterator {
+        struct KeyVal {
+            KeyT key;
+            ValT val;
+
+            KeyVal() =default;
+
+            KeyVal(Node *node) {
+                key = node->key;
+                val = node->val;
+            }
+        };
+
+        bool iteration_end = false;
+        KeyVal now{};
+        std::queue<Node *> queue;
+
+        void next() {
+            if (iteration_end) {
+                throw std::runtime_error("End of Iterator");
+            }
+            if (queue.empty()) {
+                iteration_end = true;
+                return;
+            }
+            Node *node = queue.front();
+            now = {node};
+            queue.pop();
+            if (node->left) {
+                queue.push(node->left);
+            }
+            if (node->right) {
+                queue.push(node->right);
+            }
+        }
+
+    public:
+        Iterator(Node *node, bool is_end) {
+            queue.push(node);
+            next();
+            iteration_end = is_end;
+        }
+
+        bool operator!=(const Iterator &other) {
+            return iteration_end != other.iteration_end;
+        }
+
+        KeyVal *operator->() {
+            return &now;
+        }
+
+        KeyVal &operator*() {
+            return now;
+        }
+
+        Iterator *operator++() {
+            next();
+            return this;
         }
     };
 
@@ -287,5 +350,13 @@ public:
             balance(balance_node);
         }
         return out;
+    }
+
+    Iterator begin() {
+        return {root, false};
+    }
+
+    Iterator end() {
+        return {root, true};
     }
 };

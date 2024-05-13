@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "nstt_1349.cpp"
+#include "nstt_134912.cpp"
 
 const int DEMO_TEST_KEYS[8] = {15, 18, 14, 8, 23, 12, 25, 24};
 const int DEMO_TEST_VALUES[8] = {10, 8, 14, 4, 9, 6, 15, 11};
@@ -60,4 +60,20 @@ TEST(move, move_test) {
     for (int i = 7; i >= 0; i--) {
         EXPECT_EQ(other.peek(DEMO_TEST_KEYS[i]), DEMO_TEST_VALUES[i]);
     }
+}
+
+TEST(iter, iter_test) {
+    AvlTree<int, int> tree = get_test_data();
+    std::set<std::pair<int, int>> to_compare;
+    for (int i = 0; i < 8; i++) {
+        to_compare.insert(std::pair<int, int>{DEMO_TEST_KEYS[i], DEMO_TEST_VALUES[i]});
+    }
+    auto it = tree.begin();
+    auto end = tree.end();
+    for (; it != end; ++it) {
+        unsigned long old_size = to_compare.size();
+        to_compare.erase(std::pair<int, int>(it->key, it->val));
+        EXPECT_TRUE(old_size!=to_compare.size());
+    }
+    EXPECT_TRUE(to_compare.empty());
 }
