@@ -105,7 +105,7 @@ class TreeWrapper(Tree):
         raise AttributeError()
 
 
-class AutoListTree:
+class ListTree:
     def __init__(self, border=1):
         self.__is_tree = False
         if border == 0:
@@ -140,7 +140,6 @@ class AutoListTree:
             len(self.__list_tree) < self.__border
             and type(self.__list_tree) == TreeWrapper
         ):
-            # print("AAAA tree to list")
             old_list_tree = self.__list_tree
             self.__list_tree = LinkedList()
             for node in old_list_tree:
@@ -183,34 +182,28 @@ class UniversalHashingString:
         return self.__mod
 
 
-class Counter:
-    LESS_RESIZE = 3
+class HashMap:
+    RESIZE_FACTOR = 0.75
 
     def __init__(self, list_tree_border=4) -> None:
         self.__hash = UniversalHashingString()
         self.__length = 0
-        self.__data = [
-            AutoListTree(list_tree_border) for i in range(self.__hash.get_mod())
-        ]
+        self.__data = [ListTree(list_tree_border) for i in range(self.__hash.get_mod())]
 
     def __len__(self) -> int:
         return self.__length
 
-    def add(self, line: str, cnt: int = 1) -> None:
-        if node := self.__data[self.__hash.hash(line)].includes(line):
-            node.val += cnt
+    def add(self, key: str, val: int) -> None:
+        self.__auto_resize()
+        self.__length += 1
+        this_hash = self.__data[self.__hash.hash(key)]
+        for e in this_hash:
+            if e.key != key:
+                continue
+            e.val = val
+            break
         else:
-            self.__auto_resize()
-            self.__length += 1
-            self.__data[self.__hash.hash(line)].add(line, cnt)
-
-    def sub(self, line: str, cnt: int = 1) -> None:
-        node = self.__data[self.__hash.hash(line)].includes(line)
-        if not node:
-            raise KeyError("Nothing to sub")
-        node.val -= cnt
-        if node.val == 0:
-            self.destroy(line)  # TODO doublehash итп, несрочно на самом деле
+            this_hash.add(key, val)
 
     def destroy(self, line: str) -> None:
         try:
@@ -220,14 +213,20 @@ class Counter:
             raise KeyError("Nothing to destroy")
 
     def get(self, line: str):
-        node = self.__data[self.__hash.hash(line)].includes(line)
+        node = self._get_node(line)
         if node == None:
-            return None
+            raise KeyError("Nothing to get")
         assert node.val != 0
         return node.val
 
+    def _get_node(self, line: str):
+        node = self.__data[self.__hash.hash(line)].includes(line)
+        if node == None:
+            return None
+        return node
+
     def __auto_resize(self) -> None:
-        if len(self.__data) - self.__length == 0:
+        if self.__length >= len(self.__data) * self.RESIZE_FACTOR:
             self.__hash.upd()
             self.__rehash()
 
@@ -238,6 +237,22 @@ class Counter:
         for llst in old_data:
             for node in llst:
                 self.add(node.key, node.val)
+
+
+class Counter(HashMap):
+    def add(self, line: str, cnt: int = 1) -> None:
+        if node := self._get_node(line):
+            node.val += cnt
+            return
+        super().add(line, cnt)
+
+    def sub(self, line: str, cnt: int = 1) -> None:
+        node = self._get_node(line)
+        if not node:
+            raise KeyError("Nothing to sub")
+        node.val -= cnt
+        if node.val == 0:
+            self.destroy(line)
 
 
 class Interface:
@@ -278,7 +293,10 @@ class Interface:
         return self.__ROGER_THAT
 
     def __get(self, line):
-        out = self.__cnt.get(line)
+        try:
+            out = self.__cnt.get(line)
+        except KeyError:
+            out = None
         return f"Bases on {line}: {out if out else 0}"
 
 
