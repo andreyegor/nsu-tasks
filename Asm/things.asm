@@ -87,7 +87,7 @@
 .end_macro
 
 .macro push_5 %r1 %r2 %r3 %r4 %r5
-	addi sp, sp, -16
+	addi sp, sp, -20
 	sw %r1, 0(sp)
 	sw %r2, 4(sp)
 	sw %r3, 8(sp)
@@ -102,6 +102,26 @@
 	lw %r4, 12(sp)
 	lw %r5 16(sp)
 	addi sp, sp, 20
+.end_macro
+
+.macro push_6 %r1 %r2 %r3 %r4 %r5 %r6
+	addi sp, sp, -24
+	sw %r1, 0(sp)
+	sw %r2, 4(sp)
+	sw %r3, 8(sp)
+	sw %r4, 12(sp)
+	sw %r5, 16(sp)
+	sw %r6, 20(sp)
+.end_macro
+
+.macro pop_6 %r1 %r2 %r3 %r4 %r5 %r6
+	lw %r1, 0(sp)
+	lw %r2, 4(sp)
+	lw %r3, 8(sp)
+	lw %r4, 12(sp)
+	lw %r5 16(sp)
+	lw %r6 20(sp)
+	addi sp, sp, 24
 .end_macro
 
 #ascii functions
@@ -455,7 +475,7 @@ _count_bytes_quit:
 	syscall 63
 .end_macro
 
-.macro writef
+.macro writef #file, buffer, length
 	syscall 64
 .end_macro
 
@@ -469,12 +489,34 @@ _fopen_err:
 	exit 1
 
 fread: # file_descriptor, buffer adress, maximum length->None
-	li t0, -1
+	li t0 -1
 	readf
-	beq t0, a0, _fread_err
+	beq t0 a0 _fread_err
 	ret
 _fread_err:
     exit 1
+
+fwriteline: #file, line
+	push_3 ra a0 a1
+	mv a0 a1
+	call strlen
+	mv a2 a0
+	pop_3 ra a0 a1
+	writef
+	ret
+
+fwriteline_break:
+	push_2 ra a0
+	call fwriteline
+	pop_2 ra a0
+
+	li t0 '\n'
+	push t0
+	mv a1 sp
+	li a2 1
+	writef
+	pop t0
+	ret
 
 flength:#file descriptor->length
 	li t0 -1
@@ -620,7 +662,6 @@ _lower_loop:
 _lower_end:
 	ret
 
-
 strspn: #str, spn -> int
 	mv t6 a1
 	li t2 0
@@ -660,6 +701,26 @@ _strcspn_loop_fin:
 	j _strcspn_loop
 _strcspn_quit:
 	mv a0 t2
+	ret
+
+strlen: #str->int
+	mv t0 a0
+	li a0 -1
+_strlen_loop:
+	addi a0 a0 1
+	lb t1 0(t0)
+	addi t0 t0 1
+	bne t1 zero _strlen_loop
+	ret
+
+strcopy: #from, to-> to end
+	swap a0 a1
+_strcopy_loop:
+	lb t0 0(a1)
+	addi a1 a1 1
+	sb t0 0(a0)
+	addi a0 a0 1
+	bne t0 zero _strcopy_loop
 	ret
 
 .macro set_flag %f %t #from to, to=to==from?0:to
