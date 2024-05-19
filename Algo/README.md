@@ -17,3 +17,5 @@
 * Мини-задача 25 [Trim a Binary Search Tree](https://leetcode.com/problems/trim-a-binary-search-tree/submissions/1214155390)
 * Мини-задача 26 [Balance a Binary Search Tree](https://leetcode.com/problems/balance-a-binary-search-tree/submissions/1222920914)
 * Мини-задача 27 [Maximum Frequency Stack](https://leetcode.com/problems/maximum-frequency-stack/submissions/1229444108)
+* Мини-задача 29 [Is Graph Bipartite](https://leetcode.com/problems/is-graph-bipartite/submissions/1262002158)
+* Мини-задача 30 [Sort Items by Groups Respecting Dependencies](https://leetcode.com/problems/sort-items-by-groups-respecting-dependencies/submissions/1262103391)
