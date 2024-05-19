@@ -15,6 +15,11 @@ class Bloom:
     def __init__(self, quan, prob):
         self.__hshs = ceil(log(prob, 1/2))  # ???
         self.__bitset = [False] * ceil(self.__hshs*quan/log(2))
+        # Везде в интернете используют такую формулу, но разницы я особо не заметил, там где проверял врет примерно также
+        # size = -(quan*log(prob))/(log(2)**2)
+        # self.__hshs = ceil((size/quan)*log(2))  # ???
+        # self.__bitset = [False] * ceil(size)
+        
 
         self.__abhshs = [
             [randint(0, len(self.__bitset) - 1), randint(0, len(self.__bitset) - 1)]
@@ -37,8 +42,8 @@ class Bloom:
 
 
 if __name__ == "__main__":
-    TEST_RANGE = 5000
-    PROB = 0.99
+    TEST_RANGE = 50000
+    PROB = 0.1
     test = sample(range(1,  0xffffffff), TEST_RANGE*2)
     includes, not_includes = test[0:TEST_RANGE], test[TEST_RANGE:]
 
