@@ -19,3 +19,5 @@
 * Мини-задача 27 [Maximum Frequency Stack](https://leetcode.com/problems/maximum-frequency-stack/submissions/1229444108)
 * Мини-задача 29 [Is Graph Bipartite](https://leetcode.com/problems/is-graph-bipartite/submissions/1262002158)
 * Мини-задача 30 [Sort Items by Groups Respecting Dependencies](https://leetcode.com/problems/sort-items-by-groups-respecting-dependencies/submissions/1262103391)
+* Мини-задача 32 [Jump Game](https://leetcode.com/problems/jump-game/submissions/1378593312)
+* Мини-задача 33 [Best Time to Buy and Sell Stock II](https://leetcode.com/problems/best-time-to-buy-and-sell-stock-ii/submissions/1378599380)
