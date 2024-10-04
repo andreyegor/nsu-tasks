@@ -1,3 +1,14 @@
+"""
+Реализовать алгоритм поразрядной сортировки (LSD radix
+sort) для набора строк одинаковой длины.
+
+Подготовить набор данных для тестирования, на нем
+проверять корректность алгоритма, сравнивая с
+результатом работы любой сортировки основанной на
+сравнении.
+"""
+
+
 from itertools import permutations
 from string import ascii_lowercase, ascii_uppercase
 from random import randint, choice
