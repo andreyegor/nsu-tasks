@@ -1,0 +1,8 @@
+ADD BOUNTY Obi-Wan Kenobi, 7000
+ADD BOUNTY Skywalker Luke, 8500
+ADD BOUNTY Skywalker Anakin, 8500
+ADD BOUNTY Yoda, 9000
+ADD BOUNTY Ahsoka Tano, 9500
+TOP 2
+ADD BOUNTY Obi-Wan Kenobi, 500
+RANGE [7000, 8750]
