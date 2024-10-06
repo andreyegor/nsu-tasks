@@ -1,0 +1,14 @@
+{
+  "tests": [
+    {
+      "name": "auto test",
+      "setup": "",
+      "run": "make --keep-going test",
+      "input": "",
+      "output": "",
+      "comparison": "exact",
+      "timeout": 2,
+      "points": null
+    }
+  ]
+}

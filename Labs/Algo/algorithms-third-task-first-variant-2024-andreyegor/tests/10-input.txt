@@ -1,0 +1,20 @@
+Located rebel base on Naboo
+Located rebel base on Tatooine
+Located rebel base on Alderaan
+Located rebel base on Hoth
+Located rebel base on Endor
+Located rebel base on Kashyyyk
+Located rebel base on Dagobah
+Dagobah destroyed
+Kashyyyk destroyed
+Endor destroyed
+Hoth destroyed
+Alderaan destroyed
+Tatooine destroyed
+Naboo destroyed
+Rebel bases on Naboo
+Rebel bases on Tatooine
+Rebel bases on Alderaan
+Rebel bases on Hoth
+Rebel bases on Endor
+Rebel bases on Dagobah

@@ -1,0 +1,22 @@
+Roger that
+Roger that
+Roger that
+Roger that
+Roger that
+Roger that
+Roger that
+Roger that
+Roger that
+Roger that
+Roger that
+Roger that
+Roger that
+R2D2: 6005
+Mando: 6000
+Boba Fett: 5000
+Cassian Andor: 5000
+Jyn Erso: 5000
+CLONE1: 4500
+CLONE2: 4500
+CLONE3: 4500
+CLONE4: 4500

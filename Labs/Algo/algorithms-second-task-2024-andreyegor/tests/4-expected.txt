@@ -1,0 +1,18 @@
+Roger that
+Roger that
+Roger that
+Roger that
+Roger that
+Roger that
+Roger that
+Roger that
+Roger that
+Luke: 9002
+Han Solo: 9001
+Jango Fett: 9000
+R2D2: 6005
+Mando: 6000
+Boba Fett: 5000
+Cassian Andor: 5000
+Jyn Erso: 5000
+C-3PO: 100
