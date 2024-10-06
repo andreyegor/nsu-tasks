@@ -1,0 +1,7 @@
+.
+├── dir1
+│   └── dir2
+│       ├── abcd.doc
+│       ├── another_text_file.txt
+│       └── test.py
+└── some_text_file.txt
